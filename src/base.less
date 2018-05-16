@@ -1,0 +1,15 @@
+@primary: blue;
+
+.full (@w: 100%, @h: 100%) {
+  width: @w;
+  height: @h;
+}
+.position-center (@type: absolute) {
+  position: @type;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.box-shadow (@h: 5px, @v: 5px, @b: 5px, @c: #888) {
+  box-shadow: @h @v @b @c;
+}
