@@ -6,6 +6,7 @@ import editor from './modules/editor'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
+  strict: true,
   modules: {
     editor
   },

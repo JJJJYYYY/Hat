@@ -1,120 +1,196 @@
 <template>
-  <div class="box"
-    @mousedown="onMoveStart"
-    :style="cptBoxSize"
-    :class="{ moving: this.moving.length }">
-    <i v-for="(p, i) in points" :key="i" v-once
-      class="point" :class="p" :data-type='p'
-      @mousedown.stop="onResizeStart"
-      ></i>
-    <slot></slot>
-  </div>
+  <g
+    :stroke="cptBoxBorder"
+    :transform='`translate(${offset.x},${offset.y})`'>
+    <rect
+      stroke-width='1'
+      fill='transparent'
+      vector-effect='non-scaling-stroke'
+      :x='x'
+      :y='y'
+      :width='width'
+      :height='height'
+      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(-${x},-${y})`'
+      @mousedown="onMoveStart"
+      >
+    </rect>
+    <g v-show="cptIsSingle"
+      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(-${x},-${y})`'>
+      <circle
+        r='4'
+        fill='#fff'
+        class="point"
+        vector-effect='non-scaling-stroke'
+        v-for="(p, i) in points"
+        :key="i"
+        :cx='cptPoint[i].x'
+        :cy='cptPoint[i].y'
+        :data-type='p'
+        :class="p"
+        @mousedown.stop="onResizeStart"
+        ></circle>
+    </g>
+  </g>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
+import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 
+import { MODEL } from '@/enum/editor'
+import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/type'
-
 import event from '@/util/event'
-
 import EditorConfig from '@/config/editor'
 
 const { min: ELE_MIN } = EditorConfig.element.size
+
+let uid = 0
+
+let clickTime = 0
+let selectNum = 0
+let location = ''
+
+enum DIR {
+  LEFT = 'l',
+  TOP = 't',
+  RIGHT = 'r',
+  BOTTOM = 'b'
+}
+
+interface Coord {
+  x: number,
+  y: number,
+  z?: number
+}
 
 @Component
 export default class Box extends Vue {
   @Prop() stage?: Element
 
-  @Provide() top = 100
-  @Provide() left = 100
+  @Provide() boxId = ++uid
+  @Provide() x = 100
+  @Provide() y = 100
   @Provide() width = 300
   @Provide() height = 200
-  @Provide() moving: number[] = []
-  @Provide() resizing: string[] = []
+  @Provide() scale: Coord = { x: 1, y: 1 }
+  @Provide() lock = false
+  @Provide() offset: Coord = { x: 0, y: 0 }
   @Provide() points: string[] = [
-    'l-b', 'l', 'l-t', 't', 'r-t', 'r', 'r-b', 'b'
+    `${DIR.LEFT}-${DIR.BOTTOM}`,
+    `${DIR.LEFT}`,
+    `${DIR.LEFT}-${DIR.TOP}`,
+    `${DIR.TOP}`,
+    `${DIR.RIGHT}-${DIR.TOP}`,
+    `${DIR.RIGHT}`,
+    `${DIR.RIGHT}-${DIR.BOTTOM}`,
+    `${DIR.BOTTOM}`
   ]
 
+  @State(state => state.editor.multiply) private multiply!: boolean
+  @State(state => state.editor.boxIds) private boxIds!: number[]
+  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
+  @Action private selectBox!: Function
 
-  @Watch('width')
-  onWidthChange (val: number) {
-    if (val < ELE_MIN) this.width = ELE_MIN
+  get cptSelect (): boolean {
+    return this.boxIds.includes(this.boxId)
   }
 
-  @Watch('height')
-  onHeightChange (val: number) {
-    if (val < ELE_MIN) this.height = ELE_MIN
+  get cptBoxBorder (): string {
+    return this.lock ? 'red' : (this.cptSelect ? 'blue' : '')
   }
 
-  get cptBoxSize (): ElementStyle {
-    const self = this as any
-
-    return {
-      top: `${self.top}px`,
-      left: `${self.left}px`,
-      width: `${self.width}px`,
-      height: `${self.height}px`
-    }
+  get cptIsSingle (): boolean {
+    return this.cptSelect && this.boxIds.length === 1
   }
 
-  onMoveStart (e: MouseEvent) {
-    this.moving = [e.offsetX, e.offsetY]
-    event.$on('mousemove', this.onMove)
-    event.$once('mouseup', this.onMoveEnd)
-  }
-
-  onMove (e: MouseEvent) {
-    if (this.moving.length) {
-      const { offsetTop, offsetLeft } = this.$parent.$el
-
-      this.top = e.clientY - (offsetTop - 300) - this.moving[1]
-      this.left = e.clientX - (offsetLeft - 500) - this.moving[0]
-    }
-  }
-
-  onMoveEnd () {
-    this.moving = []
-    event.$off('mousemove', this.onMove)
-    event.$off('mouseup', this.onMoveEnd)
-  }
-
-  onResizeStart (e: MouseEvent) {
-    this.resizing = ((e.target as HTMLElement).dataset.type || '').split('-')
-    event.$on('mousemove', this.onResize)
-    event.$once('mouseup', this.onResizeEnd)
-  }
-
-  onResize (e: MouseEvent) {
-    const { offsetLeft, offsetTop } = this.$parent.$el
-
-    this.resizing.forEach(location => {
-      switch (location) {
-        case 'l':
-          let left = e.clientX - (offsetLeft - 500)
-          this.width += this.left - left
-          this.left = left
-          break
-        case 't':
-          let top = e.clientY - (offsetTop - 300)
-          this.height += this.top - top
-          this.top = top
-          break
-        case 'r':
-          this.width = e.clientX - (offsetLeft - 500) - this.left
-          break
-        case 'b':
-          this.height = e.clientY - (offsetTop - 300) - this.top
-          break
+  get cptPoint (): Coord[] {
+    return this.points.map(p => {
+      let l: Coord = {
+        x: this.x + this.width / 2,
+        y: this.y + this.height / 2
       }
+
+      p.split('-').map(dir => {
+        switch (dir) {
+          case DIR.LEFT:
+            l.x = this.x
+            break
+          case DIR.TOP:
+            l.y = this.y
+            break
+          case DIR.RIGHT:
+            l.x = this.x + this.width
+            break
+          case DIR.BOTTOM:
+            l.y = this.y + this.height
+            break
+        }
+      })
+
+      return l
     })
   }
 
-  onResizeEnd () {
-    this.resizing = []
-    event.$off('mousemove', this.onResize)
-    event.$off('mouseup', this.onResizeEnd)
+  onMoveStart (e: MouseEvent) {
+    // prevent repeat call `selectBox` on `onMoveStart` and `onMoveEnd`
+    if (selectNum < 2 || this.multiply) {
+      this.selectBox(this)
+    }
+    // mouse on a selected box maybe will move,
+    // else it is't impossible
+    if (this.cptSelect) {
+      this.changeModel(MODEL.MOVE)
+    }
+    clickTime = Date.now()
+  }
+
+  moveBox (e: MouseEvent) {
+    this.offset.x += e.movementX
+    this.offset.y += e.movementY
+  }
+
+  moveEnd (e: MouseEvent) {
+    // move select box when multiply model
+    // if click time less 300s we think it is a click
+    // and call `selectBox`
+    if (this.boxIds.length > 1 &&
+      Date.now() - clickTime < 300) {
+      this.selectBox(this)
+    }
+    this.x += this.offset.x
+    this.y += this.offset.y
+    this.offset.x = 0
+    this.offset.y = 0
+  }
+
+  onResizeStart (e: MouseEvent) {
+    if (this.cptSelect) {
+      this.changeModel(MODEL.SCALE)
+      location = (e.target as HTMLElement).dataset.type || ''
+    }
+  }
+
+  scaleBox (e: MouseEvent) {
+    location.split('-').forEach(l => {
+      switch (l) {
+        case DIR.LEFT:
+          // this.width -= e.movementX
+          this.scale.x += e.movementX / 300
+          break
+        case DIR.TOP:
+          // this.height -= e.movementY
+          this.scale.y += e.movementY / 200
+          break
+        case DIR.RIGHT:
+          this.scale.x += e.movementX / 300
+          break
+        case DIR.BOTTOM:
+          this.scale.y += e.movementY / 200
+          break
+      }
+    })
   }
 }
 </script>
@@ -136,68 +212,35 @@ export default class Box extends Vue {
 }
 
 .point {
-  @size: 8px;
-  @border: 2px;
-
-  display: inline-block;
-  position: absolute;
-  width: @size;
-  height: @size;
-  border: @border solid @primary;
-  border-radius: 50%;
-  background: #ddd;
-
-  @dis: @size / 2 + @border + @box-border / 2;
-
   &.l {
-    top: 50%;
-    left: -@dis;
-    margin-top: -@dis;
     cursor: ew-resize;
   }
 
   &.l-t {
-    left: -@dis;
-    top: -@dis;
     cursor: nwse-resize;
   }
 
   &.t {
-    top: -@dis;
-    left: 50%;
-    margin-left: -@dis;
     cursor: ns-resize;
   }
 
   &.r-t {
-    top: -@dis;
-    right: -@dis;
     cursor: nesw-resize;
   }
 
   &.r {
-    top: 50%;
-    right: -@dis;
-    margin-top: -@dis;
     cursor: ew-resize;
   }
 
   &.r-b {
-    bottom: -@dis;
-    right: -@dis;
     cursor: nwse-resize;
   }
 
   &.b {
-    bottom: -@dis;
-    left: 50%;
-    margin-left: -@dis;
     cursor: ns-resize;
   }
 
   &.l-b {
-    bottom: -@dis;
-    left: -@dis;
     cursor: nesw-resize;
   }
 }

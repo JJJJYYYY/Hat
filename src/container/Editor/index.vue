@@ -1,7 +1,14 @@
 <template>
-  <div class="editor full" :style="cptFullSize">
+  <div class="editor full"
+    :style="cptFullSize"
+    tabindex="1"
+    @keydown="onKeydown"
+    @keyup="onKeyup"
+    @mousedown="onMousedown"
+    @mousemove="onMousemove"
+    @mouseup="onMouseup">
     <Stage>
-      <Box />
+      <Box/>
     </Stage>
   </div>
 </template>

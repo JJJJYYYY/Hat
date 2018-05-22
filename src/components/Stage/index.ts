@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import Component from 'vue-class-component'
+import { State, Mutation, Action } from 'vuex-class'
+import { Component, Provide } from 'vue-property-decorator'
 
 import { ElementStyle } from '@/type'
 
@@ -7,27 +8,18 @@ import event from '@/util/event'
 
 @Component
 export default class Stage extends Vue {
+  @Provide() width = 1000
+  @Provide() height = 600
+
+  @Action private selectBox!: Function
+
   get cptSize (): ElementStyle {
     return {
-      width: `${1000}px`,
-      height: `${600}px`,
       background: `${'#fff'}`
     }
   }
 
-  onMousedown (e: MouseEvent) {
-    event.$emit('mousedown', e)
-  }
-
-  onMousemove (e: MouseEvent) {
-    event.$emit('mousemove', e)
-  }
-
-  onMouseup (e: MouseEvent) {
-    event.$emit('mouseup', e)
-  }
-
-  onMouseout (e: MouseEvent) {
-    event.$emit('mouseout', e)
+  onClick () {
+    this.selectBox()
   }
 }
