@@ -5,5 +5,6 @@ export enum MODEL {
   MULTIPLY = 'box_multiply',
   CANCEL = 'box_cancel',
   CLEAR = 'box_clear',
-  SCALE = 'box_scale'
+  SCALE = 'box_scale',
+  PEN = 'draw_pen'
 }

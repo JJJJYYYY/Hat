@@ -1,16 +1,17 @@
 <template>
-  <div class="editor full"
-    :style="cptFullSize"
-    tabindex="1"
-    @keydown="onKeydown"
-    @keyup="onKeyup"
-    @mousedown="onMousedown"
-    @mousemove="onMousemove"
-    @mouseup="onMouseup">
-    <Stage>
-      <Box/>
-    </Stage>
-  </div>
+<div class="editor full"
+  tabindex="1"
+  :style="cptFullSize"
+  @keydown="onKeydown"
+  @keyup="onKeyup"
+  @mousedown="onMousedown"
+  @mousemove="onMousemove"
+  @mouseup="onMouseup">
+  <Stage>
+    <Box/>
+  </Stage>
+  <a @click='onChangeModel(MODEL_PEN)'>pen</a>
+</div>
 </template>
 
 <script lang='ts' src='./index.ts'></script>

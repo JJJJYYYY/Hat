@@ -6,8 +6,12 @@
     :width='width'
     :height='height'
     :style='cptSize'
-    @click.self="onClick">
+    @click.self="onClick"
+    @mousedown.stop="onMousedown"
+    @mousemove.stop="onMousemove"
+    @mouseup.stop="onMouseup">
     <slot></slot>
+    <path ref="path" :d='realDrawPath' stroke='#000' fill="none" stroke-dasharray="none"></path>
   </svg>
 </template>
 

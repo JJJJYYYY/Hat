@@ -9,13 +9,15 @@ let boxes: any[] = []
 interface EditorState {
   multiply: boolean,
   model: string,
+  notActiveModel: string,
   boxIds: number[]
 }
 
 const editor: Module<EditorState, any> = {
   state: {
     multiply: false,
-    model: '',
+    model: MODEL.NONE,
+    notActiveModel: MODEL.NONE,
     boxIds: []
   },
   getters: {
@@ -27,6 +29,9 @@ const editor: Module<EditorState, any> = {
     // model: move, resize, select, multiply, null=''
     [TYPE.CHANGE_MODEL] (state: EditorState, model: string) {
       state.model = model
+    },
+    [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {
+      state.notActiveModel = model
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press

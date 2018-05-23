@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { State, Getter, Mutation } from 'vuex-class'
-import Component from 'vue-class-component'
+import { Component, Provide } from 'vue-property-decorator'
 
 import { KEY_CODE } from '@/enum/common'
 import { MODEL } from '@/enum/editor'
@@ -21,8 +21,10 @@ import { ElementStyle } from '@/type'
 })
 export default class Editor extends Vue {
   @State(state => state.editor.model) model!: string
+  @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Getter getBoxes!: any
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
+  @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.PRESS_MULTIPLY) private pressMultiply!: Function
 
   get cptFullSize (): ElementStyle {
@@ -31,6 +33,10 @@ export default class Editor extends Vue {
       height: `${window.innerHeight}px`,
       background: `${'#eee'}`
     }
+  }
+
+  get MODEL_PEN (): string {
+    return MODEL.PEN
   }
 
   onKeydown (e: KeyboardEvent) {
@@ -49,8 +55,17 @@ export default class Editor extends Vue {
     }
   }
 
+  onChangeModel (model: string, active: boolean) {
+    active ? this.changeModel(model)
+      : this.changeNotActiveModel(model)
+  }
+
   onMousedown (e: MouseEvent) {
-    event.$emit('mousedown', e)
+    if (this.notActiveModel) this.changeModel(this.notActiveModel)
+    switch (this.model) {
+      default:
+        event.$emit('mousedown', e)
+    }
   }
 
   onMousemove (e: MouseEvent) {
@@ -69,11 +84,16 @@ export default class Editor extends Vue {
   }
 
   onMouseup (e: MouseEvent) {
-    if (this.model === MODEL.MOVE) {
-      this.getBoxes.forEach((box: any) => {
-        box.moveEnd(e)
-      })
+    switch (this.model) {
+      case MODEL.MOVE:
+        this.getBoxes.forEach((box: any) => {
+          box.moveEnd(e)
+        })
+        break
+      default:
+        return
     }
+
     this.changeModel(MODEL.NONE)
     event.$emit(MODEL.NONE, e)
   }
