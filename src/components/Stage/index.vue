@@ -10,8 +10,8 @@
     @mousedown.stop="onMousedown"
     @mousemove.stop="onMousemove"
     @mouseup.stop="onMouseup">
-    <slot></slot>
-    <path ref="path" :d='realDrawPath' stroke='#000' fill="none" stroke-dasharray="none"></path>
+    <path :d='realDrawPath' stroke='#000' fill="none" stroke-dasharray="none"></path>
+    <Elements />
   </svg>
 </template>
 

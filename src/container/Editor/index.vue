@@ -7,9 +7,7 @@
   @mousedown="onMousedown"
   @mousemove="onMousemove"
   @mouseup="onMouseup">
-  <Stage>
-    <Box/>
-  </Stage>
+  <Stage />
   <a @click='onChangeModel(MODEL_PEN)'>pen</a>
 </div>
 </template>

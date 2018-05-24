@@ -4,13 +4,16 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
+import { Element } from '@/type/editor'
+
 let boxes: any[] = []
 
 interface EditorState {
   multiply: boolean,
   model: string,
   notActiveModel: string,
-  boxIds: number[]
+  boxIds: number[],
+  elements: Element[]
 }
 
 const editor: Module<EditorState, any> = {
@@ -18,7 +21,8 @@ const editor: Module<EditorState, any> = {
     multiply: false,
     model: MODEL.NONE,
     notActiveModel: MODEL.NONE,
-    boxIds: []
+    boxIds: [],
+    elements: []
   },
   getters: {
     getBoxes (state): Vue[] {
@@ -53,6 +57,10 @@ const editor: Module<EditorState, any> = {
     [MODEL.CLEAR] (state: EditorState) {
       boxes = []
       state.boxIds = []
+    },
+    [TYPE.ADD_ELE] (state: EditorState, ele: Element) {
+      state.elements.push(ele)
+      console.log(state.elements)
     }
   },
   actions: {
