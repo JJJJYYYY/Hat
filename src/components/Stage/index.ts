@@ -8,9 +8,10 @@ import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
 import DrawPath from '@/components/Elements/DrawPath/index.vue'
+import Box from '@/components/Elements/Box/index.vue'
 
 import event from '@/util/event'
-import { drawPath } from '@/util/draw'
+import { drawCurvePath } from '@/util/draw'
 
 @Component({
   components: { DrawPath }
@@ -32,9 +33,16 @@ class Elements extends Vue {
   }
 }
 
+const defaultSize = {
+  minX: window.innerWidth,
+  minY: window.innerHeight,
+  maxX: 0,
+  maxY: 0
+}
 let oldPath = ''
+let pathSize = Object.assign({}, defaultSize)
 @Component({
-  components: { Elements }
+  components: { Box, Elements }
 })
 export default class Stage extends Vue {
   @Provide() width = 1000
@@ -55,8 +63,17 @@ export default class Stage extends Vue {
   }
 
   get realDrawPath (): string {
-    oldPath = drawPath(oldPath, this.drawPath)
-    console.log(oldPath)
+    let drawPath = this.drawPath
+    if (drawPath.length) {
+      let newPoint = drawPath[drawPath.length - 1]
+
+      pathSize.minX = Math.min(newPoint[0], pathSize.minX)
+      pathSize.minY = Math.min(newPoint[1], pathSize.minY)
+      pathSize.maxX = Math.max(newPoint[0], pathSize.maxX)
+      pathSize.maxY = Math.max(newPoint[1], pathSize.maxY)
+    }
+    oldPath = drawCurvePath(oldPath, drawPath)
+
     return oldPath
   }
 
@@ -84,13 +101,17 @@ export default class Stage extends Vue {
   onMouseup (e: MouseEvent) {
     switch (this.model) {
       case MODEL.PEN:
-        this.drawPath.push([e.offsetX, e.offsetY])
         let path: Element = {
           type: DrawPath.name,
           attrs: {
+            x: pathSize.minX,
+            y: pathSize.minY,
+            w: pathSize.maxX - pathSize.minX,
+            h: pathSize.maxY - pathSize.minY,
             d: this.realDrawPath
           }
         }
+        pathSize = Object.assign({}, defaultSize)
         this.addElement(path)
         this.drawPath = []
         oldPath = ''

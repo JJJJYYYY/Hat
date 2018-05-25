@@ -1,4 +1,9 @@
 <template>
+  <Box
+    :x='data.attrs.x'
+    :y='data.attrs.y'
+    :width='data.attrs.w'
+    :height='data.attrs.h'>
     <path
       :d='data.attrs.d'
       stroke='#000'
@@ -6,6 +11,7 @@
       stroke-dasharray="none"
       >
     </path>
+  </Box>
 </template>
 
 <script lang="ts">
@@ -14,7 +20,11 @@ import { Component, Provide, Prop } from 'vue-property-decorator'
 
 import { Element } from '@/type/editor'
 
-@Component
+import Box from '../Box/index.vue'
+
+@Component({
+  components: { Box }
+})
 export default class DrawPath extends Vue {
   name = 'DrawPath'
 

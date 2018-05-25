@@ -6,7 +6,7 @@ export interface BoxStore {
 }
 
 export interface Attr {
-  [key: string]: string
+  [key: string]: string | number
 }
 
 export interface Element {

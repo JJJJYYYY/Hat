@@ -7,7 +7,6 @@ import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
 import Stage from '@/components/Stage/index.vue'
-import Box from '@/components/elements/Box/index.vue'
 
 import event from '@/util/event'
 
@@ -15,14 +14,13 @@ import { ElementStyle } from '@/type'
 
 @Component({
   components: {
-    Stage,
-    Box
+    Stage
   }
 })
 export default class Editor extends Vue {
   @State(state => state.editor.model) model!: string
   @State(state => state.editor.notActiveModel) notActiveModel!: string
-  @Getter getBoxes!: any
+  @Getter selectedBoxes!: any
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.PRESS_MULTIPLY) private pressMultiply!: Function
@@ -56,8 +54,12 @@ export default class Editor extends Vue {
   }
 
   onChangeModel (model: string, active: boolean) {
-    active ? this.changeModel(model)
-      : this.changeNotActiveModel(model)
+    if (this.notActiveModel === model) {
+      this.changeNotActiveModel(MODEL.NONE)
+    } else {
+      active ? this.changeModel(model)
+        : this.changeNotActiveModel(model)
+    }
   }
 
   onMousedown (e: MouseEvent) {
@@ -71,12 +73,12 @@ export default class Editor extends Vue {
   onMousemove (e: MouseEvent) {
     switch (this.model) {
       case MODEL.MOVE:
-        this.getBoxes.forEach((box: any) => {
+        this.selectedBoxes.forEach((box: any) => {
           box.moveBox(e)
         })
         break
       case MODEL.SCALE:
-        this.getBoxes.forEach((box: any) => {
+        this.selectedBoxes.forEach((box: any) => {
           box.scaleBox(e)
         })
         break
@@ -86,7 +88,7 @@ export default class Editor extends Vue {
   onMouseup (e: MouseEvent) {
     switch (this.model) {
       case MODEL.MOVE:
-        this.getBoxes.forEach((box: any) => {
+        this.selectedBoxes.forEach((box: any) => {
           box.moveEnd(e)
         })
         break

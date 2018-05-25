@@ -1,5 +1,5 @@
 const POINT_R = 0.5
-export function drawPath (old: string = '', path: number[][]) {
+export function drawCurvePath (old: string = '', path: number[][]) {
   switch (path.length) {
     case 0:
       return ''

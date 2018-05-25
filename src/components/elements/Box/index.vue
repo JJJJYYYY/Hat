@@ -14,6 +14,7 @@
       @mousedown="onMoveStart"
       >
     </rect>
+    <slot></slot>
     <g v-show="cptIsSingle"
       :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(-${x},-${y})`'>
       <circle
@@ -67,13 +68,14 @@ interface Coord {
 
 @Component
 export default class Box extends Vue {
+  name = 'Box'
   @Prop() stage?: Element
+  @Prop() x!: number
+  @Prop() y!: number
+  @Prop() width!: number
+  @Prop() height!: number
 
   @Provide() boxId = ++uid
-  @Provide() x = 100
-  @Provide() y = 100
-  @Provide() width = 300
-  @Provide() height = 200
   @Provide() scale: Coord = { x: 1, y: 1 }
   @Provide() lock = false
   @Provide() offset: Coord = { x: 0, y: 0 }
@@ -131,6 +133,10 @@ export default class Box extends Vue {
 
       return l
     })
+  }
+
+  get sX () {
+    return this.x
   }
 
   onMoveStart (e: MouseEvent) {

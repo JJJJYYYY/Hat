@@ -7,9 +7,9 @@
     :height='height'
     :style='cptSize'
     @click.self="onClick"
-    @mousedown.stop="onMousedown"
-    @mousemove.stop="onMousemove"
-    @mouseup.stop="onMouseup">
+    @mousedown="onMousedown"
+    @mousemove="onMousemove"
+    @mouseup="onMouseup">
     <path :d='realDrawPath' stroke='#000' fill="none" stroke-dasharray="none"></path>
     <Elements />
   </svg>

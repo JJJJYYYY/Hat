@@ -25,7 +25,7 @@ const editor: Module<EditorState, any> = {
     elements: []
   },
   getters: {
-    getBoxes (state): Vue[] {
+    selectedBoxes (state): Vue[] {
       return state.boxIds.length ? boxes : []
     }
   },
