@@ -4,7 +4,7 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Element } from '@/type/editor'
+import { Element, IndexElement } from '@/type/editor'
 
 let boxes: any[] = []
 
@@ -27,6 +27,9 @@ const editor: Module<EditorState, any> = {
   getters: {
     selectedBoxes (state): Vue[] {
       return state.boxIds.length ? boxes : []
+    },
+    getElementCount (state): number {
+      return state.elements.length
     }
   },
   mutations: {
@@ -36,6 +39,13 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {
       state.notActiveModel = model
+    },
+    [TYPE.MOVE_ELE] (state: EditorState, { i, attrs, text }: IndexElement) {
+      let ele = state.elements[i]
+      if (ele) {
+        Object.assign(ele.attrs, attrs)
+        ele.text = text
+      }
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
@@ -60,7 +70,6 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: Element) {
       state.elements.push(ele)
-      console.log(state.elements)
     }
   },
   actions: {

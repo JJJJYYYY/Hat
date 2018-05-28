@@ -10,13 +10,13 @@
       :y='y'
       :width='width'
       :height='height'
-      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(-${x},-${y})`'
+      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(${-x},${-y})`'
       @mousedown="onMoveStart"
       >
     </rect>
     <slot></slot>
     <g v-show="cptIsSingle"
-      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(-${x},-${y})`'>
+      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(${-x},${-y})`'>
       <circle
         r='4'
         fill='#fff'
@@ -42,6 +42,7 @@ import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/type'
+import { Coord, IndexElement } from '@/type/editor'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 
@@ -60,16 +61,9 @@ enum DIR {
   BOTTOM = 'b'
 }
 
-interface Coord {
-  x: number,
-  y: number,
-  z?: number
-}
-
 @Component
 export default class Box extends Vue {
   name = 'Box'
-  @Prop() stage?: Element
   @Prop() x!: number
   @Prop() y!: number
   @Prop() width!: number
@@ -93,6 +87,7 @@ export default class Box extends Vue {
   @State(state => state.editor.multiply) private multiply!: boolean
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
+  @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
   @Action private selectBox!: Function
 
   get cptSelect (): boolean {
@@ -135,10 +130,6 @@ export default class Box extends Vue {
     })
   }
 
-  get sX () {
-    return this.x
-  }
-
   onMoveStart (e: MouseEvent) {
     // prevent repeat call `selectBox` on `onMoveStart` and `onMoveEnd`
     if (selectNum < 2 || this.multiply) {
@@ -165,8 +156,8 @@ export default class Box extends Vue {
       Date.now() - clickTime < 300) {
       this.selectBox(this)
     }
-    this.x += this.offset.x
-    this.y += this.offset.y
+    // this.moveEle(copyElement(this.data))
+    this.$emit('moveEnd', this.offset)
     this.offset.x = 0
     this.offset.y = 0
   }

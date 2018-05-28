@@ -1,9 +1,9 @@
 import Vue, { CreateElement, VNode } from 'vue'
-import { State, Mutation, Action } from 'vuex-class'
+import { State, Mutation, Action, Getter } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
 
 import { ElementStyle } from '@/type'
-import { Element } from '@/type/editor'
+import { IndexElement } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
@@ -17,13 +17,13 @@ import { drawCurvePath } from '@/util/draw'
   components: { DrawPath }
 })
 class Elements extends Vue {
-  @State(state => state.editor.elements) elements!: Element[]
+  @State(state => state.editor.elements) elements!: IndexElement[]
 
   render (h: CreateElement): VNode {
     let elements = this.elements.map(ele => {
       switch (ele.type) {
         case DrawPath.name:
-          return h(DrawPath.name, { props: { data: ele } })
+          return h(DrawPath.name, { props: { element: ele } })
       }
     })
     return h(
@@ -54,6 +54,7 @@ export default class Stage extends Vue {
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
+  @Getter private getElementCount!: number
   @Action private selectBox!: Function
 
   get cptSize (): ElementStyle {
@@ -101,13 +102,14 @@ export default class Stage extends Vue {
   onMouseup (e: MouseEvent) {
     switch (this.model) {
       case MODEL.PEN:
-        let path: Element = {
+        let path: IndexElement = {
+          i: Math.max(this.getElementCount, 0),
           type: DrawPath.name,
           attrs: {
-            x: pathSize.minX,
-            y: pathSize.minY,
-            w: pathSize.maxX - pathSize.minX,
-            h: pathSize.maxY - pathSize.minY,
+            x: pathSize.minX - 10,
+            y: pathSize.minY - 10,
+            width: pathSize.maxX - pathSize.minX + 20,
+            height: pathSize.maxY - pathSize.minY + 20,
             d: this.realDrawPath
           }
         }
@@ -115,10 +117,8 @@ export default class Stage extends Vue {
         this.addElement(path)
         this.drawPath = []
         oldPath = ''
+        e.stopPropagation()
         break
     }
-
-    this.changeModel(MODEL.NONE)
-    event.$emit(MODEL.NONE, e)
   }
 }
