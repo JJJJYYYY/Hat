@@ -1,43 +1,7 @@
-<template>
-  <g
-    :stroke="cptBoxBorder"
-    :transform='`translate(${offset.x},${offset.y})`'>
-    <rect
-      stroke-width='1'
-      fill='transparent'
-      vector-effect='non-scaling-stroke'
-      :x='x'
-      :y='y'
-      :width='width'
-      :height='height'
-      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(${-x},${-y})`'
-      @mousedown="onMoveStart"
-      >
-    </rect>
-    <slot></slot>
-    <g v-show="cptIsSingle"
-      :transform='`translate(${x},${y}) scale(${scale.x},${scale.y}) translate(${-x},${-y})`'>
-      <circle
-        r='4'
-        fill='#fff'
-        class="point"
-        vector-effect='non-scaling-stroke'
-        v-for="(p, i) in points"
-        :key="i"
-        :cx='cptPoint[i].x'
-        :cy='cptPoint[i].y'
-        :data-type='p'
-        :class="p"
-        @mousedown.stop="onResizeStart"
-        ></circle>
-    </g>
-  </g>
-</template>
-
-<script lang="ts">
 import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
+import '@/style/elements/box.less'
 
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
@@ -90,6 +54,46 @@ export default class Box extends Vue {
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
   @Action private selectBox!: Function
 
+  render () {
+    const scalePoints = this.points.map((p, i) => {
+      return (
+        <circle
+          r='4'
+          vector-effect='non-scaling-stroke'
+          key={i}
+          cx={this.cptPoint[i].x}
+          cy={this.cptPoint[i].y}
+          data-type={p}
+          class={ `box-point ${p}`}
+          onMousedown={this.onResizeStart}
+        ></circle>
+      )
+    })
+
+    return (
+      <g
+        stroke={this.cptBoxBorder}
+        transform={`translate(${this.offset.x},${this.offset.y})`}>
+        <rect
+          class='box-border'
+          vector-effect='non-scaling-stroke'
+          x={this.x}
+          y={this.y}
+          width={this.width}
+          height={this.height}
+          transform={this.translate}
+          onMousedown={this.onMoveStart}
+          >
+        </rect>
+        { this.$slots.default }
+        <g v-show={this.cptIsSingle}
+          transform={this.translate}>
+          { scalePoints }
+        </g>
+      </g>
+    )
+  }
+
   get cptSelect (): boolean {
     return this.boxIds.includes(this.boxId)
   }
@@ -128,6 +132,14 @@ export default class Box extends Vue {
 
       return l
     })
+  }
+
+  get translate (): string {
+    return `
+      translate(${this.x},${this.y})
+      scale(${this.scale.x},${this.scale.y})
+      translate(${-this.x},${-this.y})
+    `
   }
 
   onMoveStart (e: MouseEvent) {
@@ -190,56 +202,3 @@ export default class Box extends Vue {
     })
   }
 }
-</script>
-
-<style lang="less" scoped>
-@import url(~@/base.less);
-
-@box-border: 1px;
-
-.box {
-  position: absolute;
-  width: 300px;
-  height: 200px;
-  border: @box-border solid @primary;
-
-  &.moving {
-    cursor: move;
-  }
-}
-
-.point {
-  &.l {
-    cursor: ew-resize;
-  }
-
-  &.l-t {
-    cursor: nwse-resize;
-  }
-
-  &.t {
-    cursor: ns-resize;
-  }
-
-  &.r-t {
-    cursor: nesw-resize;
-  }
-
-  &.r {
-    cursor: ew-resize;
-  }
-
-  &.r-b {
-    cursor: nwse-resize;
-  }
-
-  &.b {
-    cursor: ns-resize;
-  }
-
-  &.l-b {
-    cursor: nesw-resize;
-  }
-}
-</style>
-

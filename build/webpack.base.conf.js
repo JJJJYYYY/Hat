@@ -22,7 +22,7 @@ module.exports = {
       : config.dev.assetsPublicPath
   },
   resolve: {
-    extensions: ['.js', '.ts', '.tsx', '.vue', '.json'],
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
@@ -31,23 +31,22 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.vue$/,
-        loader: 'vue-loader',
-        options: vueLoaderConfig
-      },
-      {
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/,
-        options: {
-          appendTsSuffixTo: [/\.vue$/],
-        }
+        test: /\.less$/,
+        loader: 'vue-style-loader'
       },
       {
         test: /\.tsx?$/,
         loader: 'tslint-loader',
         exclude: /node_modules/,
         enforce: 'pre'
+      },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          'babel-loader',
+          'ts-loader'
+        ]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -77,7 +76,7 @@ module.exports = {
   },
   plugins: [
     new StylelintWebpackPlugin({
-      files: ['src/**/*.vue', 'src/**/*.less']
+      files: ['src/style/**/*.less']
     })
   ],
   node: {

@@ -1,20 +1,21 @@
 import Vue, { CreateElement, VNode } from 'vue'
 import { State, Mutation, Action, Getter } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
+import '@/style/components/stage.less'
 
 import { ElementStyle } from '@/type'
 import { IndexElement } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
-import DrawPath from '@/components/Elements/DrawPath/index.vue'
-import Box from '@/components/Elements/Box/index.vue'
+import DrawPen from '@/elements/DrawPen'
+import Box from '@/elements/Box'
 
 import event from '@/util/event'
 import { drawCurvePath } from '@/util/draw'
 
 @Component({
-  components: { DrawPath }
+  components: { DrawPen }
 })
 class Elements extends Vue {
   @State(state => state.editor.elements) elements!: IndexElement[]
@@ -22,14 +23,11 @@ class Elements extends Vue {
   render (h: CreateElement): VNode {
     let elements = this.elements.map(ele => {
       switch (ele.type) {
-        case DrawPath.name:
-          return h(DrawPath.name, { props: { element: ele } })
+        case DrawPen.name:
+          return <DrawPen element={ele} />
       }
     })
-    return h(
-      'g',
-      elements as any
-    )
+    return <g>{ elements }</g>
   }
 }
 
@@ -42,7 +40,7 @@ const defaultSize = {
 let oldPath = ''
 let pathSize = Object.assign({}, defaultSize)
 @Component({
-  components: { Box, Elements }
+  // components: { Box, Elements }
 })
 export default class Stage extends Vue {
   @Provide() width = 1000
@@ -56,6 +54,32 @@ export default class Stage extends Vue {
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
   @Getter private getElementCount!: number
   @Action private selectBox!: Function
+
+  render () {
+    return (
+      <svg
+        id='stage'
+        class='stage'
+        version='1.1' baseProfile='full'
+        xmlns='http://www.w3.org/2000/svg'
+        width={this.width}
+        height={this.height}
+        style={this.cptSize}
+        onClick={this.onClick}
+        onMousedown={this.onMousedown}
+        onMousemove={this.onMousemove}
+        onMouseup={this.onMouseup}>
+        <path
+          stroke='#000'
+          fill='none'
+          stroke-dasharray='none'
+          d={this.realDrawPath}>
+        </path>
+        <Box x={100} y={100} width={100} height={100} />
+        <Elements />
+      </svg>
+    )
+  }
 
   get cptSize (): ElementStyle {
     return {
@@ -104,7 +128,7 @@ export default class Stage extends Vue {
       case MODEL.PEN:
         let path: IndexElement = {
           i: Math.max(this.getElementCount, 0),
-          type: DrawPath.name,
+          type: DrawPen.name,
           attrs: {
             x: pathSize.minX - 10,
             y: pathSize.minY - 10,

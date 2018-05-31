@@ -13,7 +13,8 @@ interface EditorState {
   model: string,
   notActiveModel: string,
   boxIds: number[],
-  elements: Element[]
+  elements: Element[],
+  currEle?: Element
 }
 
 const editor: Module<EditorState, any> = {
@@ -22,7 +23,8 @@ const editor: Module<EditorState, any> = {
     model: MODEL.NONE,
     notActiveModel: MODEL.NONE,
     boxIds: [],
-    elements: []
+    elements: [],
+    currEle: undefined
   },
   getters: {
     selectedBoxes (state): Vue[] {

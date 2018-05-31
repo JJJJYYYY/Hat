@@ -1,12 +1,13 @@
-import Vue from 'vue'
+import Vue, { CreateElement, VNode } from 'vue'
 import { State, Getter, Mutation } from 'vuex-class'
 import { Component, Provide } from 'vue-property-decorator'
+import '@/style/container/editor.less'
 
 import { KEY_CODE } from '@/enum/common'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
-import Stage from '@/components/Stage/index.vue'
+import Stage from '@/components/Stage'
 
 import event from '@/util/event'
 
@@ -24,6 +25,22 @@ export default class Editor extends Vue {
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.PRESS_MULTIPLY) private pressMultiply!: Function
+
+  render (h: CreateElement): VNode {
+    return (
+      <div class='editor full'
+        tabindex='1'
+        style={this.cptFullSize}
+        onKeydown={this.onKeydown}
+        onKeyup={this.onKeyup}
+        onMousedown={this.onMousedown}
+        onMousemove={this.onMousemove}
+        onMouseup={this.onMouseup}>
+        <Stage />
+        <a onClick={this.onChangeModel.bind(this, this.MODEL_PEN)}>pen</a>
+      </div >
+    )
+  }
 
   get cptFullSize (): ElementStyle {
     return {
@@ -53,7 +70,7 @@ export default class Editor extends Vue {
     }
   }
 
-  onChangeModel (model: string, active: boolean) {
+  onChangeModel (model: string, active?: boolean) {
     if (this.notActiveModel === model) {
       this.changeNotActiveModel(MODEL.NONE)
     } else {

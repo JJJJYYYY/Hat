@@ -1,21 +1,3 @@
-<template>
-  <Box
-    :x='element.attrs.x'
-    :y='element.attrs.y'
-    :width='element.attrs.width'
-    :height='element.attrs.height'
-    @moveEnd='moveEnd'>
-    <path
-      :d='element.attrs.d'
-      stroke='#000'
-      fill="none"
-      stroke-dasharray="none"
-      >
-    </path>
-  </Box>
-</template>
-
-<script lang="ts">
 import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
@@ -25,7 +7,7 @@ import { IndexElement, Coord } from '@/type/editor'
 import { copyElement } from '@/util'
 import { TYPE } from '@/enum/store'
 
-import Box from '../Box/index.vue'
+import Box from './Box'
 
 @Component({
   components: { Box }
@@ -36,6 +18,24 @@ export default class DrawPath extends Vue {
   @Prop() element!: IndexElement
 
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
+
+  render () {
+    return (
+      <Box
+        x={this.element.attrs.x}
+        y={this.element.attrs.y}
+        width={this.element.attrs.width}
+        height={this.element.attrs.height}
+        onMoveEnd='moveEnd'>
+        <path
+          d={this.element.attrs.d}
+          stroke='#000'
+          fill='none'
+          stroke-dasharray='none'>
+        </path>
+      </Box>
+    )
+  }
 
   moveEnd ({ x, y }: Coord) {
     let newEle = copyElement(this.element)
@@ -48,4 +48,3 @@ export default class DrawPath extends Vue {
     this.moveEle(newEle)
   }
 }
-</script>
