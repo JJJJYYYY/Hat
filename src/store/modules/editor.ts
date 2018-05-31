@@ -4,11 +4,13 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Element, IndexElement } from '@/type/editor'
+import { Size, Element, IndexElement, Coord } from '@/type/editor'
 
 let boxes: any[] = []
 
 interface EditorState {
+  window: Size,
+  stage: Coord,
   multiply: boolean,
   model: string,
   notActiveModel: string,
@@ -19,6 +21,14 @@ interface EditorState {
 
 const editor: Module<EditorState, any> = {
   state: {
+    window: {
+      width: 0,
+      height: 0
+    },
+    stage: {
+      x: 0,
+      y: 0
+    },
     multiply: false,
     model: MODEL.NONE,
     notActiveModel: MODEL.NONE,
@@ -51,6 +61,14 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
+    },
+    [TYPE.RESIZE_WINDOW] (state: EditorState, { width, height }: Size) {
+      state.window.width = width
+      state.window.height = height
+    },
+    [TYPE.STAGE_CHANGE] (state: EditorState, { x, y }: Coord) {
+      state.stage.x = x
+      state.stage.y = y
     },
     [MODEL.MULTIPLY] (state: EditorState, box: any) {
       if (!state.boxIds.includes(box.boxId)) {

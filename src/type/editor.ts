@@ -1,15 +1,18 @@
 import Vue from 'vue'
 
+export interface Size {
+  width: number,
+  height: number
+}
+
 export interface BoxStore {
   id: number,
   vm: Vue
 }
 
-export interface Attr {
+export interface Attr extends Size {
   x: number,
   y: number,
-  width: number,
-  height: number,
   [key: string]: string | number
 }
 
@@ -29,8 +32,6 @@ export interface Coord {
   z?: number
 }
 
-export interface EleLocation extends Coord {
-  i: number, // index
-  w: number,
-  h: number
+export interface EleLocation extends Coord, Size {
+  i: number // index
 }

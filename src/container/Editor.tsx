@@ -12,6 +12,7 @@ import Stage from '@/components/Stage'
 import event from '@/util/event'
 
 import { ElementStyle } from '@/type'
+import { Size } from '@/type/editor'
 
 @Component({
   components: {
@@ -20,6 +21,7 @@ import { ElementStyle } from '@/type'
 })
 export default class Editor extends Vue {
   @State(state => state.editor.model) model!: string
+  @State(state => state.editor.window) window!: Size
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Getter selectedBoxes!: any
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
@@ -44,8 +46,8 @@ export default class Editor extends Vue {
 
   get cptFullSize (): ElementStyle {
     return {
-      width: `${window.innerWidth}px`,
-      height: `${window.innerHeight}px`,
+      width: `${this.window.width}px`,
+      height: `${this.window.height}px`,
       background: `${'#eee'}`
     }
   }

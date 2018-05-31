@@ -10,8 +10,4 @@ export default class App extends Vue {
       </div>
     )
   }
-
-  onClick () {
-    console.log('111')
-  }
 }

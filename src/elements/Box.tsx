@@ -33,11 +33,12 @@ export default class Box extends Vue {
   @Prop() width!: number
   @Prop() height!: number
 
-  @Provide() boxId = ++uid
   @Provide() scale: Coord = { x: 1, y: 1 }
-  @Provide() lock = false
   @Provide() offset: Coord = { x: 0, y: 0 }
-  @Provide() points: string[] = [
+  @Provide() lock = false
+
+  boxId = ++uid
+  points: string[] = [
     `${DIR.LEFT}-${DIR.BOTTOM}`,
     `${DIR.LEFT}`,
     `${DIR.LEFT}-${DIR.TOP}`,
@@ -73,8 +74,10 @@ export default class Box extends Vue {
     return (
       <g
         stroke={this.cptBoxBorder}
-        transform={`translate(${this.offset.x},${this.offset.y})`}>
+        transform={`translate(${this.offset.x},${this.offset.y})`}
+        >
         <rect
+          v-show={this.cptSelect}
           class='box-border'
           vector-effect='non-scaling-stroke'
           x={this.x}
@@ -87,7 +90,8 @@ export default class Box extends Vue {
         </rect>
         { this.$slots.default }
         <g v-show={this.cptIsSingle}
-          transform={this.translate}>
+          transform={this.translate}
+          >
           { scalePoints }
         </g>
       </g>
@@ -148,7 +152,7 @@ export default class Box extends Vue {
       this.selectBox(this)
     }
     // mouse on a selected box maybe will move,
-    // else it is't impossible
+    // else it is not impossible
     if (this.cptSelect) {
       this.changeModel(MODEL.MOVE)
     }

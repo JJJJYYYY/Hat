@@ -6,6 +6,8 @@ import App from './App'
 import router from './router'
 import store from './store'
 
+import { TYPE } from '@/enum/store'
+
 Vue.config.productionTip = true
 
 declare global {
@@ -13,9 +15,6 @@ declare global {
     interface Element extends VNode {}
     interface ElementClass extends Vue {}
     interface IntrinsicElements {
-      [elem: string]: any
-    }
-    interface Attribute {
       [elem: string]: any
     }
   }
@@ -34,3 +33,13 @@ const app = new Vue({
 document.oncontextmenu = function (e: MouseEvent) {
   e.preventDefault()
 }
+
+function resizeWindow () {
+  app.$store.commit(TYPE.RESIZE_WINDOW, {
+    width: window.innerWidth,
+    height: window.innerHeight
+  })
+}
+// window reset
+window.addEventListener('resize', resizeWindow)
+window.addEventListener('load', resizeWindow)

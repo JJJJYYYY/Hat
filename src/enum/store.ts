@@ -1,4 +1,6 @@
 export enum TYPE {
+  RESIZE_WINDOW = 'resize_window',
+  STAGE_CHANGE = 'stage_change',
   CHANGE_MODEL = 'changeModel',
   CHANGE_NOT_ACTIVE_MODEL = 'changeNotActiveModel',
   SINGLE = 'single',
