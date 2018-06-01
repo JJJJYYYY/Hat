@@ -47,6 +47,7 @@ const editor: Module<EditorState, any> = {
   mutations: {
     // model: move, resize, select, multiply, null=''
     [TYPE.CHANGE_MODEL] (state: EditorState, model: string) {
+      console.log('currModel: ', model)
       state.model = model
     },
     [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {

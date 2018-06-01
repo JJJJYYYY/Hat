@@ -10,9 +10,7 @@ import ELEMENT from '@/enum/element'
 
 import Box from './Box'
 
-@Component({
-  components: { Box }
-})
+@Component
 export default class DrawPen extends Vue {
   name = ELEMENT.DRAW_PEN
 

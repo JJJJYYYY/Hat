@@ -14,11 +14,7 @@ import event from '@/util/event'
 import { ElementStyle } from '@/type'
 import { Size } from '@/type/editor'
 
-@Component({
-  components: {
-    Stage
-  }
-})
+@Component
 export default class Editor extends Vue {
   @State(state => state.editor.model) model!: string
   @State(state => state.editor.window) window!: Size

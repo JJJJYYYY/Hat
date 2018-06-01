@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
-import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
+import { Component, Provide, Prop, Watch, Model } from 'vue-property-decorator'
 import '@/style/elements/box.less'
 
 import { MODEL } from '@/enum/editor'
@@ -28,6 +28,8 @@ enum DIR {
 @Component
 export default class Box extends Vue {
   name = 'Box'
+  startPoint: Coord = { x: 0, y: 0 }
+
   @Prop() x!: number
   @Prop() y!: number
   @Prop() width!: number
@@ -51,6 +53,7 @@ export default class Box extends Vue {
 
   @State(state => state.editor.multiply) private multiply!: boolean
   @State(state => state.editor.boxIds) private boxIds!: number[]
+  @State(state => state.editor.stage) private stage!: Coord
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
   @Action private selectBox!: Function
@@ -77,9 +80,9 @@ export default class Box extends Vue {
         transform={`translate(${this.offset.x},${this.offset.y})`}
         >
         <rect
-          v-show={this.cptSelect}
           class='box-border'
           vector-effect='non-scaling-stroke'
+          ref='svgBox'
           x={this.x}
           y={this.y}
           width={this.width}
@@ -89,7 +92,7 @@ export default class Box extends Vue {
           >
         </rect>
         { this.$slots.default }
-        <g v-show={this.cptIsSingle}
+        <g
           transform={this.translate}
           >
           { scalePoints }
@@ -147,42 +150,27 @@ export default class Box extends Vue {
   }
 
   onMoveStart (e: MouseEvent) {
-    // prevent repeat call `selectBox` on `onMoveStart` and `onMoveEnd`
-    if (selectNum < 2 || this.multiply) {
-      this.selectBox(this)
-    }
-    // mouse on a selected box maybe will move,
-    // else it is not impossible
-    if (this.cptSelect) {
-      this.changeModel(MODEL.MOVE)
-    }
-    clickTime = Date.now()
+    this.changeModel(MODEL.MOVE)
+
+    event.$on(MODEL.MOVE, this.onMove)
+    event.$once(MODEL.NONE, this.onMoveEnd)
+
+    this.startPoint.x = e.offsetX - this.offset.x
+    this.startPoint.y = e.offsetY - this.offset.y
+    e.stopPropagation()
   }
 
-  moveBox (e: MouseEvent) {
-    this.offset.x += e.movementX
-    this.offset.y += e.movementY
+  onMove (e: MouseEvent) {
+    this.offset.x = e.pageX - this.stage.x - this.startPoint.x
+    this.offset.y = e.pageY - this.stage.y - this.startPoint.y
   }
 
-  moveEnd (e: MouseEvent) {
-    // move select box when multiply model
-    // if click time less 300s we think it is a click
-    // and call `selectBox`
-    if (this.boxIds.length > 1 &&
-      Date.now() - clickTime < 300) {
-      this.selectBox(this)
-    }
-    // this.moveEle(copyElement(this.data))
-    this.$emit('moveEnd', this.offset)
-    this.offset.x = 0
-    this.offset.y = 0
+  onMoveEnd (e: MouseEvent) {
+    event.$off(MODEL.MOVE, this.onMove)
   }
 
   onResizeStart (e: MouseEvent) {
-    if (this.cptSelect) {
-      this.changeModel(MODEL.SCALE)
-      location = (e.target as HTMLElement).dataset.type || ''
-    }
+    console.log(e)
   }
 
   scaleBox (e: MouseEvent) {

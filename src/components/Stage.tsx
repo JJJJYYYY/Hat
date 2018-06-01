@@ -14,9 +14,7 @@ import Box from '@/elements/Box'
 import event from '@/util/event'
 import { drawCurvePath } from '@/util/draw'
 
-@Component({
-  components: { DrawPen }
-})
+@Component
 class Elements extends Vue {
   @State(state => state.editor.elements) elements!: IndexElement[]
 
@@ -39,9 +37,8 @@ const defaultSize = {
 }
 let oldPath = ''
 let pathSize = Object.assign({}, defaultSize)
-@Component({
-  // components: { Box, Elements }
-})
+
+@Component
 export default class Stage extends Vue {
   @Provide() width = 1000
   @Provide() height = 600
@@ -82,7 +79,9 @@ export default class Stage extends Vue {
             >
           </path>
           <Box x={100} y={100} width={100} height={100} />
-          <Elements />
+          <Box x={100} y={100} width={100} height={100} />
+          <Box x={100} y={100} width={100} height={100} />
+          {/* <Elements /> */}
         </svg>
       </div>
     )
@@ -123,42 +122,14 @@ export default class Stage extends Vue {
   }
 
   onMousedown (e: MouseEvent) {
-    if (this.notActiveModel) this.changeModel(this.notActiveModel)
-    switch (this.model) {
-      case MODEL.PEN:
-        this.drawPath.push([e.offsetX, e.offsetY])
-        break
-    }
+    // todo
   }
 
   onMousemove (e: MouseEvent) {
-    switch (this.model) {
-      case MODEL.PEN:
-        this.drawPath.push([e.offsetX, e.offsetY])
-        break
-    }
+    event.$emit(this.model, e)
   }
 
   onMouseup (e: MouseEvent) {
-    switch (this.model) {
-      case MODEL.PEN:
-        let path: IndexElement = {
-          i: Math.max(this.getElementCount, 0),
-          type: DrawPen.name,
-          attrs: {
-            x: pathSize.minX - 10,
-            y: pathSize.minY - 10,
-            width: pathSize.maxX - pathSize.minX + 20,
-            height: pathSize.maxY - pathSize.minY + 20,
-            d: this.realDrawPath
-          }
-        }
-        pathSize = Object.assign({}, defaultSize)
-        this.addElement(path)
-        this.drawPath = []
-        oldPath = ''
-        e.stopPropagation()
-        break
-    }
+    // todo
   }
 }

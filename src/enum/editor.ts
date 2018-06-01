@@ -1,5 +1,5 @@
 export enum MODEL {
-  NONE = '',
+  NONE = 'none',
   MOVE = 'box_move',
   SELECT = 'box_select',
   MULTIPLY = 'box_multiply',

@@ -9,9 +9,7 @@ import { TYPE } from '@/enum/store'
 
 import Box from './Box'
 
-@Component({
-  components: { Box }
-})
+@Component
 export default class DrawPath extends Vue {
   name = 'DrawPath'
 
