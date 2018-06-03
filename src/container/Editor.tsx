@@ -1,5 +1,5 @@
 import Vue, { CreateElement, VNode } from 'vue'
-import { State, Getter, Mutation } from 'vuex-class'
+import { State, Getter, Mutation, Action } from 'vuex-class'
 import { Component, Provide } from 'vue-property-decorator'
 import '@/style/container/editor.less'
 
@@ -12,17 +12,19 @@ import Stage from '@/components/Stage'
 import event from '@/util/event'
 
 import { ElementStyle } from '@/type'
-import { Size } from '@/type/editor'
+import { Size, Coord } from '@/type/editor'
 
 @Component
 export default class Editor extends Vue {
+  startPoint?: Coord
+
   @State(state => state.editor.model) model!: string
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Getter selectedBoxes!: any
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
-  @Mutation(TYPE.PRESS_MULTIPLY) private pressMultiply!: Function
+  @Action private pressMultiply!: Function
 
   render (h: CreateElement): VNode {
     return (
@@ -68,20 +70,15 @@ export default class Editor extends Vue {
     }
   }
 
-  onChangeModel (model: string, active?: boolean) {
-    if (this.notActiveModel === model) {
-      this.changeNotActiveModel(MODEL.NONE)
-    } else {
-      active ? this.changeModel(model)
-        : this.changeNotActiveModel(model)
-    }
+  onChangeModel (model: string) {
+    this.changeModel(model === this.model ? MODEL.NONE : model)
   }
 
   onMousedown (e: MouseEvent) {
-    if (this.notActiveModel) this.changeModel(this.notActiveModel)
+    // if (this.notActiveModel) this.changeModel(this.notActiveModel)
+    this.startPoint = { x: e.offsetX, y: e.offsetY }
+
     switch (this.model) {
-      default:
-        event.$emit('mousedown', e)
     }
   }
 
@@ -89,12 +86,12 @@ export default class Editor extends Vue {
     switch (this.model) {
       case MODEL.MOVE:
         this.selectedBoxes.forEach((box: any) => {
-          box.moveBox(e)
+          box[MODEL.MOVE](e, this.startPoint)
         })
         break
       case MODEL.SCALE:
         this.selectedBoxes.forEach((box: any) => {
-          box.scaleBox(e)
+          box[MODEL.SCALE](e, this.startPoint)
         })
         break
     }
@@ -104,7 +101,12 @@ export default class Editor extends Vue {
     switch (this.model) {
       case MODEL.MOVE:
         this.selectedBoxes.forEach((box: any) => {
-          box.moveEnd(e)
+          box[`${MODEL.MOVE}End`](e)
+        })
+        break
+      case MODEL.SCALE:
+        this.selectedBoxes.forEach((box: any) => {
+          box[`${MODEL.SCALE}End`](e)
         })
         break
       default:

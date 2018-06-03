@@ -17,3 +17,5 @@ export function deepCopy (obj: any) {
 }
 
 export const copyElement = deepCopy
+
+export function noop () {/* noop */}

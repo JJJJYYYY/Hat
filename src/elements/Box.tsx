@@ -6,7 +6,7 @@ import '@/style/elements/box.less'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/type'
-import { Coord, IndexElement } from '@/type/editor'
+import { Coord, IndexElement, EleBox } from '@/type/editor'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 
@@ -16,7 +16,6 @@ let uid = 0
 
 let clickTime = 0
 let selectNum = 0
-let location = ''
 
 enum DIR {
   LEFT = 'l',
@@ -28,17 +27,7 @@ enum DIR {
 @Component
 export default class Box extends Vue {
   name = 'Box'
-  startPoint: Coord = { x: 0, y: 0 }
-
-  @Prop() x!: number
-  @Prop() y!: number
-  @Prop() width!: number
-  @Prop() height!: number
-
-  @Provide() scale: Coord = { x: 1, y: 1 }
-  @Provide() offset: Coord = { x: 0, y: 0 }
-  @Provide() lock = false
-
+  dir?: string
   boxId = ++uid
   points: string[] = [
     `${DIR.LEFT}-${DIR.BOTTOM}`,
@@ -51,12 +40,21 @@ export default class Box extends Vue {
     `${DIR.BOTTOM}`
   ]
 
+  @Prop() x!: number
+  @Prop() y!: number
+  @Prop() width!: number
+  @Prop() height!: number
+
+  @Provide() scale: Coord = { x: 1, y: 1 }
+  @Provide() offset: Coord = { x: 0, y: 0 }
+  @Provide() lock = false
+
   @State(state => state.editor.multiply) private multiply!: boolean
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @State(state => state.editor.stage) private stage!: Coord
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
-  @Action private selectBox!: Function
+  @Action('selectBox') private select!: Function
 
   render () {
     const scalePoints = this.points.map((p, i) => {
@@ -65,19 +63,21 @@ export default class Box extends Vue {
           r='4'
           vector-effect='non-scaling-stroke'
           key={i}
-          cx={this.cptPoint[i].x}
-          cy={this.cptPoint[i].y}
+          cx={this.scalePoint[i].x}
+          cy={this.scalePoint[i].y}
           data-type={p}
           class={ `box-point ${p}`}
-          onMousedown={this.onResizeStart}
+          onMousedown={this.onScaleStart.bind(this, p)}
         ></circle>
       )
     })
 
     return (
       <g
-        stroke={this.cptBoxBorder}
+        stroke={this.boxBorder}
         transform={`translate(${this.offset.x},${this.offset.y})`}
+        onMousedown={this.onMousedown}
+        onMouseup={this.onMouseup}
         >
         <rect
           class='box-border'
@@ -88,12 +88,14 @@ export default class Box extends Vue {
           width={this.width}
           height={this.height}
           transform={this.translate}
-          onMousedown={this.onMoveStart}
           >
         </rect>
-        { this.$slots.default }
         <g
-          transform={this.translate}
+          transform={this.translate}>
+          { this.$slots.default }
+        </g>
+        <g
+          v-show={this.isSingle}
           >
           { scalePoints }
         </g>
@@ -101,38 +103,42 @@ export default class Box extends Vue {
     )
   }
 
-  get cptSelect (): boolean {
+  get selected (): boolean {
     return this.boxIds.includes(this.boxId)
   }
 
-  get cptBoxBorder (): string {
-    return this.lock ? 'red' : (this.cptSelect ? 'blue' : '')
+  get boxBorder (): string {
+    return this.lock ? 'red' : (this.selected ? 'blue' : '')
   }
 
-  get cptIsSingle (): boolean {
-    return this.cptSelect && this.boxIds.length === 1
+  get isSingle (): boolean {
+    return this.selected && this.boxIds.length === 1
   }
 
-  get cptPoint (): Coord[] {
+  get scalePoint (): Coord[] {
+    let x = this.x
+    let y = this.y
+    let width = this.width * this.scale.x
+    let height = this.height * this.scale.y
     return this.points.map(p => {
       let l: Coord = {
-        x: this.x + this.width / 2,
-        y: this.y + this.height / 2
+        x: this.x + width / 2,
+        y: this.y + height / 2
       }
 
       p.split('-').map(dir => {
         switch (dir) {
           case DIR.LEFT:
-            l.x = this.x
+            l.x = x
             break
           case DIR.TOP:
-            l.y = this.y
+            l.y = y
             break
           case DIR.RIGHT:
-            l.x = this.x + this.width
+            l.x = x + width
             break
           case DIR.BOTTOM:
-            l.y = this.y + this.height
+            l.y = y + height
             break
         }
       })
@@ -141,56 +147,72 @@ export default class Box extends Vue {
     })
   }
 
-  get translate (): string {
-    return `
-      translate(${this.x},${this.y})
-      scale(${this.scale.x},${this.scale.y})
-      translate(${-this.x},${-this.y})
-    `
+  get translate (): string { // Q: why is work?
+    return `translate(${this.x},${this.y}) scale(${this.scale.x},${this.scale.y}) translate(${-this.x},${-this.y})`
   }
 
-  onMoveStart (e: MouseEvent) {
-    this.changeModel(MODEL.MOVE)
+  onMousedown () {
+    console.log()
+    let selected = this.selected
+    selectNum = this.boxIds.length
+    // prevent repeat call `selectBox` on `onMoveStart` and `onMoveEnd`
+    if ((selectNum < 2 && !selected) || this.multiply) this.select(this)
+    // mouse on a selected box maybe will move,
+    // else it is not impossible
+    if (selected || this.isSingle) this.changeModel(MODEL.MOVE)
+    clickTime = Date.now()
+  }
 
-    event.$on(MODEL.MOVE, this.onMove)
-    event.$once(MODEL.NONE, this.onMoveEnd)
+  onMouseup (e: MouseEvent) {
+    // simulate click
+    if (selectNum > 1 && Date.now() - clickTime < 300) this.select(this)
+  }
 
-    this.startPoint.x = e.offsetX - this.offset.x
-    this.startPoint.y = e.offsetY - this.offset.y
+  [MODEL.MOVE] (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
+    this.offset.x = e.pageX - this.stage.x - offset.x
+    this.offset.y = e.pageY - this.stage.y - offset.y
+  }
+
+  [`${MODEL.MOVE}End`] (e: MouseEvent) {
+    this.changeModel(MODEL.NONE)
+    this.offset.x = 0
+    this.offset.y = 0
+  }
+
+  onScaleStart (dir: string, e: MouseEvent) {
+    this.dir = dir
+    this.changeModel(MODEL.SCALE)
     e.stopPropagation()
   }
 
-  onMove (e: MouseEvent) {
-    this.offset.x = e.pageX - this.stage.x - this.startPoint.x
-    this.offset.y = e.pageY - this.stage.y - this.startPoint.y
-  }
-
-  onMoveEnd (e: MouseEvent) {
-    event.$off(MODEL.MOVE, this.onMove)
-  }
-
-  onResizeStart (e: MouseEvent) {
-    console.log(e)
-  }
-
-  scaleBox (e: MouseEvent) {
-    location.split('-').forEach(l => {
+  [MODEL.SCALE] (e: MouseEvent, startPoint: Coord) {
+    (this.dir || '').split('-').forEach(l => {
       switch (l) {
         case DIR.LEFT:
-          // this.width -= e.movementX
-          this.scale.x += e.movementX / 300
+          let diffX = this.stage.x + this.x - e.pageX
+          this.scale.x = diffX / this.width + 1
+          this.offset.x = -diffX
           break
         case DIR.TOP:
-          // this.height -= e.movementY
-          this.scale.y += e.movementY / 200
+          let diffY = this.stage.y + this.y - e.pageY
+          this.scale.y = diffY / this.height + 1
+          this.offset.y = -diffY
           break
         case DIR.RIGHT:
-          this.scale.x += e.movementX / 300
+          this.scale.x = (e.pageX - this.stage.x - this.x) / this.width
           break
         case DIR.BOTTOM:
-          this.scale.y += e.movementY / 200
+          this.scale.y = (e.pageY - this.stage.y - this.y) / this.height
           break
       }
     })
+  }
+
+  [`${MODEL.SCALE}End`] () {
+    this.changeModel(MODEL.NONE)
+    this.offset.x = 0
+    this.offset.y = 0
+    this.scale.x = 1
+    this.scale.y = 1
   }
 }

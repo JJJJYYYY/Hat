@@ -19,6 +19,7 @@ export default class DrawPen extends Vue {
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
 
   render () {
+    console.log(this.element.attrs.d)
     return (
       <Box
         x={this.element.attrs.x}

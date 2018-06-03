@@ -17,6 +17,9 @@ declare global {
     interface IntrinsicElements {
       [elem: string]: any
     }
+    interface Attribute {
+      [elem: string]: any
+    }
   }
 }
 
@@ -30,9 +33,9 @@ const app = new Vue({
 })
 
 // prevent contextmenu
-document.oncontextmenu = function (e: MouseEvent) {
+document.addEventListener('contextmenu', (e: MouseEvent) => {
   e.preventDefault()
-}
+})
 
 function resizeWindow () {
   app.$store.commit(TYPE.RESIZE_WINDOW, {

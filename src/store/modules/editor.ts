@@ -4,9 +4,9 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Size, Element, IndexElement, Coord } from '@/type/editor'
+import { Size, Element, IndexElement, Coord, EleBox } from '@/type/editor'
 
-let boxes: any[] = []
+let boxes: Set<EleBox> = new Set()
 
 interface EditorState {
   window: Size,
@@ -37,8 +37,8 @@ const editor: Module<EditorState, any> = {
     currEle: undefined
   },
   getters: {
-    selectedBoxes (state): Vue[] {
-      return state.boxIds.length ? boxes : []
+    selectedBoxes (state): Set<EleBox> {
+      return boxes
     },
     getElementCount (state): number {
       return state.elements.length
@@ -71,39 +71,51 @@ const editor: Module<EditorState, any> = {
       state.stage.x = x
       state.stage.y = y
     },
-    [MODEL.MULTIPLY] (state: EditorState, box: any) {
+    [MODEL.MULTIPLY] (state: EditorState, box: EleBox) {
       if (!state.boxIds.includes(box.boxId)) {
-        boxes.push(box)
+        boxes.add(box)
         state.boxIds.push(box.boxId)
       }
     },
-    [MODEL.SELECT] (state: EditorState, box: any) {
-      boxes = [box]
+    [MODEL.SELECT] (state: EditorState, box: EleBox) {
+      boxes.clear()
+      boxes.add(box)
       state.boxIds = [box.boxId]
     },
-    [MODEL.CANCEL] (state: EditorState, box: any) {
-      boxes = boxes.filter(select => select !== box)
-      state.boxIds = boxes.map(select => select.boxId)
+    [MODEL.CANCEL] (state: EditorState, box: EleBox) {
+      let boxesArr = [...boxes]
+      boxes = new Set(boxesArr.filter(select => select !== box))
+      state.boxIds = boxesArr.map(select => select.boxId)
     },
     [MODEL.CLEAR] (state: EditorState) {
-      boxes = []
+      boxes.clear()
       state.boxIds = []
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: Element) {
       state.elements.push(ele)
+      console.log(state.elements)
     }
   },
   actions: {
-    selectBox ({ commit, state }, box: any) {
+    selectBox ({ commit, state }, box?: EleBox) {
       if (box) {
-        if (state.multiply && state.boxIds.includes(box.boxId)) {
-          commit(MODEL.CANCEL, box)
-        } else {
-          commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, box)
+        if (box.boxId) {
+          if (state.multiply && state.boxIds.includes(box.boxId)) {
+            commit(MODEL.CANCEL, box)
+          } else {
+            commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, box)
+          }
         }
       } else {
         commit(MODEL.CLEAR)
       }
+      console.log('select: ', box)
+    },
+    pressMultiply ({ commit, state }, press: boolean) {
+      commit(TYPE.PRESS_MULTIPLY, press)
+      // press
+      //   ? commit(TYPE.PRESS_MULTIPLY, true)
+      //   : setTimeout(() => commit(TYPE.PRESS_MULTIPLY, false), 600)
     }
   }
 }

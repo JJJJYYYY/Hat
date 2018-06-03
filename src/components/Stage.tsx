@@ -4,7 +4,7 @@ import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import '@/style/components/stage.less'
 
 import { ElementStyle } from '@/type'
-import { Size, IndexElement } from '@/type/editor'
+import { Size, Coord, Element, IndexElement } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
@@ -13,6 +13,7 @@ import Box from '@/elements/Box'
 
 import event from '@/util/event'
 import { drawCurvePath } from '@/util/draw'
+import { self, once } from '@/util/decorator'
 
 @Component
 class Elements extends Vue {
@@ -40,21 +41,25 @@ let pathSize = Object.assign({}, defaultSize)
 
 @Component
 export default class Stage extends Vue {
+  // startPoint?: Coord
+  test = 1
+
   @Provide() width = 1000
   @Provide() height = 600
   @Provide() drawPath: number[][] = []
 
+  @Action selectBox!: Function
   @State(state => state.editor.model) model!: string
   @State(state => state.editor.window) window!: Size
+  @State(state => state.editor.elements) elements!: Element[]
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
   @Getter private getElementCount!: number
-  @Action private selectBox!: Function
 
-  render () {
+  render (): VNode {
     return (
       <div
         ref='stage'
@@ -65,7 +70,7 @@ export default class Stage extends Vue {
           xmlns='http://www.w3.org/2000/svg'
           width={this.width}
           height={this.height}
-          style={this.cptSize}
+          style={this.size}
           onClick={this.onClick}
           onMousedown={this.onMousedown}
           onMousemove={this.onMousemove}
@@ -78,16 +83,13 @@ export default class Stage extends Vue {
             d={this.realDrawPath}
             >
           </path>
-          <Box x={100} y={100} width={100} height={100} />
-          <Box x={100} y={100} width={100} height={100} />
-          <Box x={100} y={100} width={100} height={100} />
-          {/* <Elements /> */}
+          <Elements />
         </svg>
-      </div>
+      </div >
     )
   }
 
-  get cptSize (): ElementStyle {
+  get size (): ElementStyle {
     return {
       background: `${'#fff'}`
     }
@@ -117,19 +119,51 @@ export default class Stage extends Vue {
     })
   }
 
+  @self
   onClick () {
     this.selectBox()
   }
 
+  @self
   onMousedown (e: MouseEvent) {
-    // todo
+    switch (this.model) {
+      case MODEL.PEN:
+        this.drawPath.push([e.offsetX, e.offsetY])
+        break
+    }
   }
 
+  @self
   onMousemove (e: MouseEvent) {
-    event.$emit(this.model, e)
+    switch (this.model) {
+      case MODEL.PEN:
+        this.drawPath.length > 0 && this.drawPath.push([e.offsetX, e.offsetY])
+        break
+    }
   }
 
   onMouseup (e: MouseEvent) {
-    // todo
+    switch (this.model) {
+      case MODEL.PEN:
+        let path: IndexElement = {
+          i: this.elements.length,
+          type: DrawPen.name,
+          attrs: {
+            x: pathSize.minX,
+            y: pathSize.minY,
+            width: pathSize.maxX - pathSize.minX,
+            height: pathSize.maxY - pathSize.minY,
+            d: this.realDrawPath
+          }
+        }
+        pathSize = Object.assign({}, defaultSize)
+        this.addElement(path)
+        this.drawPath = []
+        oldPath = ''
+        break
+    }
+
+    // this.changeModel(MODEL.NONE)
+    // event.$emit(MODEL.NONE, e)
   }
 }
