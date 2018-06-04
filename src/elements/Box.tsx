@@ -11,6 +11,7 @@ import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 
 const { min: ELE_MIN } = EditorConfig.element.size
+const PADDING = 20
 
 let uid = 0
 
@@ -80,7 +81,7 @@ export default class Box extends Vue {
         onMouseup={this.onMouseup}
         >
         <rect
-          class='box-border'
+          class={`box-border ${this.selected ? 'selected' : ''}`}
           vector-effect='non-scaling-stroke'
           ref='svgBox'
           x={this.x}
@@ -152,10 +153,8 @@ export default class Box extends Vue {
   }
 
   onMousedown () {
-    console.log()
     let selected = this.selected
     selectNum = this.boxIds.length
-    // prevent repeat call `selectBox` on `onMoveStart` and `onMoveEnd`
     if ((selectNum < 2 && !selected) || this.multiply) this.select(this)
     // mouse on a selected box maybe will move,
     // else it is not impossible
@@ -164,8 +163,12 @@ export default class Box extends Vue {
   }
 
   onMouseup (e: MouseEvent) {
-    // simulate click
-    if (selectNum > 1 && Date.now() - clickTime < 300) this.select(this)
+    if (selectNum > 1 &&
+      this.boxIds.length === selectNum && // prevent repeat call `selectBox`
+      Date.now() - clickTime < 300 // simulate click
+    ) {
+      this.select(this)
+    }
   }
 
   [MODEL.MOVE] (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
@@ -175,8 +178,7 @@ export default class Box extends Vue {
 
   [`${MODEL.MOVE}End`] (e: MouseEvent) {
     this.changeModel(MODEL.NONE)
-    this.offset.x = 0
-    this.offset.y = 0
+    this.commitState()
   }
 
   onScaleStart (dir: string, e: MouseEvent) {
@@ -210,6 +212,17 @@ export default class Box extends Vue {
 
   [`${MODEL.SCALE}End`] () {
     this.changeModel(MODEL.NONE)
+    this.commitState()
+  }
+
+  commitState () {
+    this.$emit('change', {
+      offsetX: this.offset.x,
+      offsetY: this.offset.y,
+      scaleX: this.scale.x,
+      scaleY: this.scale.y
+    })
+
     this.offset.x = 0
     this.offset.y = 0
     this.scale.x = 1

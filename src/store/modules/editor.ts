@@ -6,7 +6,7 @@ import { MODEL } from '@/enum/editor'
 
 import { Size, Element, IndexElement, Coord, EleBox } from '@/type/editor'
 
-let boxes: Set<EleBox> = new Set()
+let boxes: EleBox[] = []
 
 interface EditorState {
   window: Size,
@@ -37,8 +37,8 @@ const editor: Module<EditorState, any> = {
     currEle: undefined
   },
   getters: {
-    selectedBoxes (state): Set<EleBox> {
-      return boxes
+    selectedBoxes (state): EleBox[] {
+      return state.boxIds && boxes
     },
     getElementCount (state): number {
       return state.elements.length
@@ -53,12 +53,8 @@ const editor: Module<EditorState, any> = {
     [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {
       state.notActiveModel = model
     },
-    [TYPE.MOVE_ELE] (state: EditorState, { i, attrs, text }: IndexElement) {
-      let ele = state.elements[i]
-      if (ele) {
-        Object.assign(ele.attrs, attrs)
-        ele.text = text
-      }
+    [TYPE.MOVE_ELE] (state: EditorState, { change, i, changeState, target }) {
+      change.call(target, state.elements[i], changeState)
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
@@ -73,22 +69,20 @@ const editor: Module<EditorState, any> = {
     },
     [MODEL.MULTIPLY] (state: EditorState, box: EleBox) {
       if (!state.boxIds.includes(box.boxId)) {
-        boxes.add(box)
+        boxes.push(box)
         state.boxIds.push(box.boxId)
       }
     },
     [MODEL.SELECT] (state: EditorState, box: EleBox) {
-      boxes.clear()
-      boxes.add(box)
+      boxes = [box]
       state.boxIds = [box.boxId]
     },
     [MODEL.CANCEL] (state: EditorState, box: EleBox) {
-      let boxesArr = [...boxes]
-      boxes = new Set(boxesArr.filter(select => select !== box))
-      state.boxIds = boxesArr.map(select => select.boxId)
+      boxes = boxes.filter(select => select !== box)
+      state.boxIds = boxes.map(select => select.boxId)
     },
     [MODEL.CLEAR] (state: EditorState) {
-      boxes.clear()
+      boxes = []
       state.boxIds = []
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: Element) {
@@ -109,7 +103,8 @@ const editor: Module<EditorState, any> = {
       } else {
         commit(MODEL.CLEAR)
       }
-      console.log('select: ', box)
+      console.log('select: ', state.boxIds)
+      console.log('select: ', boxes)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)

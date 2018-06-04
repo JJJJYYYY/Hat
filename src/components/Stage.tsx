@@ -15,21 +15,6 @@ import event from '@/util/event'
 import { drawCurvePath } from '@/util/draw'
 import { self, once } from '@/util/decorator'
 
-@Component
-class Elements extends Vue {
-  @State(state => state.editor.elements) elements!: IndexElement[]
-
-  render (h: CreateElement): VNode {
-    let elements = this.elements.map(ele => {
-      switch (ele.type) {
-        case DrawPen.name:
-          return <DrawPen element={ele} />
-      }
-    })
-    return <g>{ elements }</g>
-  }
-}
-
 const defaultSize = {
   minX: window.innerWidth,
   minY: window.innerHeight,
@@ -83,10 +68,19 @@ export default class Stage extends Vue {
             d={this.realDrawPath}
             >
           </path>
-          <Elements />
+          { this.renderElements() }
         </svg>
       </div >
     )
+  }
+
+  renderElements () {
+    return this.elements.map(ele => {
+      switch (ele.type) {
+        case DrawPen.name:
+          return <DrawPen element={ele} />
+      }
+    })
   }
 
   get size (): ElementStyle {
@@ -97,14 +91,6 @@ export default class Stage extends Vue {
 
   get realDrawPath (): string {
     let drawPath = this.drawPath
-    if (drawPath.length) {
-      let newPoint = drawPath[drawPath.length - 1]
-
-      pathSize.minX = Math.min(newPoint[0], pathSize.minX)
-      pathSize.minY = Math.min(newPoint[1], pathSize.minY)
-      pathSize.maxX = Math.max(newPoint[0], pathSize.maxX)
-      pathSize.maxY = Math.max(newPoint[1], pathSize.maxY)
-    }
     oldPath = drawCurvePath(oldPath, drawPath)
 
     return oldPath
@@ -128,7 +114,7 @@ export default class Stage extends Vue {
   onMousedown (e: MouseEvent) {
     switch (this.model) {
       case MODEL.PEN:
-        this.drawPath.push([e.offsetX, e.offsetY])
+        this.addDrawPath([e.offsetX, e.offsetY])
         break
     }
   }
@@ -137,7 +123,7 @@ export default class Stage extends Vue {
   onMousemove (e: MouseEvent) {
     switch (this.model) {
       case MODEL.PEN:
-        this.drawPath.length > 0 && this.drawPath.push([e.offsetX, e.offsetY])
+        this.drawPath.length > 0 && this.addDrawPath([e.offsetX, e.offsetY])
         break
     }
   }
@@ -153,7 +139,7 @@ export default class Stage extends Vue {
             y: pathSize.minY,
             width: pathSize.maxX - pathSize.minX,
             height: pathSize.maxY - pathSize.minY,
-            d: this.realDrawPath
+            d: this.drawPath
           }
         }
         pathSize = Object.assign({}, defaultSize)
@@ -165,5 +151,14 @@ export default class Stage extends Vue {
 
     // this.changeModel(MODEL.NONE)
     // event.$emit(MODEL.NONE, e)
+  }
+
+  addDrawPath (point: number[]) {
+    pathSize.minX = Math.min(point[0], pathSize.minX)
+    pathSize.minY = Math.min(point[1], pathSize.minY)
+    pathSize.maxX = Math.max(point[0], pathSize.maxX)
+    pathSize.maxY = Math.max(point[1], pathSize.maxY)
+
+    this.drawPath.push(point)
   }
 }

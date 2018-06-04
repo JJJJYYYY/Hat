@@ -14,7 +14,7 @@ export interface BoxStore {
 export interface Attr extends Size {
   x: number
   y: number
-  [key: string]: string | number
+  [key: string]: any
 }
 
 export interface Element {
@@ -41,4 +41,11 @@ export interface EleBox extends Vue {
   boxId: number
   [MODEL.SCALE]: Function
   [MODEL.MOVE]: Function
+}
+
+export interface EleChangeStage {
+  offsetX: number
+  offsetY: number
+  scaleX: number
+  scaleY: number
 }

@@ -14,9 +14,13 @@
 }
 
 .box-border {
-  stroke: @primary;
+  stroke: transparent;
   stroke-width: 1;
   fill: transparent;
+
+  &.selected {
+    stroke: @primary;
+  }
 }
 
 .box-point {

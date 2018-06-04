@@ -85,6 +85,7 @@ export default class Editor extends Vue {
   onMousemove (e: MouseEvent) {
     switch (this.model) {
       case MODEL.MOVE:
+        console.log(this.selectedBoxes)
         this.selectedBoxes.forEach((box: any) => {
           box[MODEL.MOVE](e, this.startPoint)
         })
