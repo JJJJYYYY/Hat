@@ -2,7 +2,7 @@ import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
 
-import { IndexElement, Coord, EleChangeStage } from '@/type/editor'
+import { Element, Coord, EleChangeStage } from '@/type/editor'
 
 import { copyElement } from '@/util'
 import { TYPE } from '@/enum/store'
@@ -16,7 +16,8 @@ const POINT_R = 0.5
 export default class DrawPen extends Vue {
   name = ELEMENT.DRAW_PEN
 
-  @Prop() element!: IndexElement
+  @Prop() element!: Element
+  @Prop() index!: number
 
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
 
@@ -77,7 +78,7 @@ export default class DrawPen extends Vue {
   }
 
   changeState (
-    element: IndexElement,
+    element: Element,
     { offsetX, offsetY, scaleX, scaleY }: EleChangeStage
   ) {
     const { attrs } = element
@@ -107,8 +108,9 @@ export default class DrawPen extends Vue {
   }
 
   commitState (changeState: EleChangeStage) {
+    console.log(this.index)
     this.moveEle({
-      i: this.element.i,
+      i: this.index,
       changeState,
       change: this.changeState,
       target: this

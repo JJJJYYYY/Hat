@@ -12,7 +12,7 @@ import Stage from '@/components/Stage'
 import event from '@/util/event'
 
 import { ElementStyle } from '@/type'
-import { Size, Coord } from '@/type/editor'
+import { Size, Coord, EleBox } from '@/type/editor'
 
 @Component
 export default class Editor extends Vue {
@@ -21,7 +21,7 @@ export default class Editor extends Vue {
   @State(state => state.editor.model) model!: string
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.notActiveModel) notActiveModel!: string
-  @Getter selectedBoxes!: any
+  @Getter selectedBoxes!: EleBox[]
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Action private pressMultiply!: Function
@@ -85,37 +85,44 @@ export default class Editor extends Vue {
   onMousemove (e: MouseEvent) {
     switch (this.model) {
       case MODEL.MOVE:
-        console.log(this.selectedBoxes)
-        this.selectedBoxes.forEach((box: any) => {
+        this.selectedBoxes.forEach((box: EleBox) => {
           box[MODEL.MOVE](e, this.startPoint)
         })
         break
       case MODEL.SCALE:
-        this.selectedBoxes.forEach((box: any) => {
+        this.selectedBoxes.forEach((box: EleBox) => {
           box[MODEL.SCALE](e, this.startPoint)
         })
         break
+      case MODEL.ROTATE:
+        this.selectedBoxes.forEach((box: EleBox) => {
+          box[MODEL.ROTATE](e, this.startPoint)
+        })
+        break
+      default:
     }
   }
 
   onMouseup (e: MouseEvent) {
     switch (this.model) {
       case MODEL.MOVE:
-        this.selectedBoxes.forEach((box: any) => {
-          box[`${MODEL.MOVE}End`](e)
+        this.selectedBoxes.forEach((box: EleBox) => {
+          (box as any)[`${MODEL.MOVE}End`](e)
         })
         break
       case MODEL.SCALE:
-        this.selectedBoxes.forEach((box: any) => {
-          box[`${MODEL.SCALE}End`](e)
+        this.selectedBoxes.forEach((box: EleBox) => {
+          (box as any)[`${MODEL.SCALE}End`](e)
+        })
+        break
+      case MODEL.ROTATE:
+        this.selectedBoxes.forEach((box: EleBox) => {
+          (box as any)[`${MODEL.ROTATE}End`](e)
         })
         break
       default:
         return
     }
-
-    this.changeModel(MODEL.NONE)
-    event.$emit(MODEL.NONE, e)
   }
 
   onMouseout (e: MouseEvent) {

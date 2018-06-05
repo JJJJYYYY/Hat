@@ -15,6 +15,7 @@ export function self (
 
   descriptor.value = function (...args: any[]) {
     const e = args.find(a => a instanceof Event)
+    if (!e) console.warn('event not exist')
     if (e && e.target !== e.currentTarget) return
     return method.apply(this, args)
   }
@@ -34,6 +35,7 @@ export function stop (
     let result = method.apply(this, args)
 
     const e = args.find(a => a instanceof Event)
+    if (!e) console.warn('event not exist')
     if (e) e.stopPropagation()
 
     return result
@@ -54,6 +56,7 @@ export function prevent (
     let result = method.apply(this, args)
 
     const e = args.find(a => a instanceof Event)
+    if (!e) console.warn('event not exist')
     if (e) e.preventDefault()
 
     return result
@@ -76,6 +79,7 @@ export function once (
     descriptor.value.__once = true
 
     const e = args.find(a => a instanceof Event)
+    if (!e) console.warn('event not exist')
     if (e) e.preventDefault()
 
     return result

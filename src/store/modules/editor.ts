@@ -4,7 +4,7 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Size, Element, IndexElement, Coord, EleBox } from '@/type/editor'
+import { Size, Element, Coord, EleBox } from '@/type/editor'
 
 let boxes: EleBox[] = []
 

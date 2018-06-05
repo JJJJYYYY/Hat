@@ -23,10 +23,6 @@ export interface Element {
   text?: string // only <text>
 }
 
-export interface IndexElement extends Element {
-  i: number
-}
-
 export interface Coord {
   x: number
   y: number
@@ -41,6 +37,7 @@ export interface EleBox extends Vue {
   boxId: number
   [MODEL.SCALE]: Function
   [MODEL.MOVE]: Function
+  [MODEL.ROTATE]: Function
 }
 
 export interface EleChangeStage {

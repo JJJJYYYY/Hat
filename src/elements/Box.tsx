@@ -6,12 +6,15 @@ import '@/style/elements/box.less'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/type'
-import { Coord, IndexElement, EleBox } from '@/type/editor'
+import { Coord, EleBox } from '@/type/editor'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
+import { stop } from '@/util/decorator'
 
 const { min: ELE_MIN } = EditorConfig.element.size
 const PADDING = 20
+const ROTATE_POINT_TOP = 20
+const ROTATE_POINT_R = 6
 
 let uid = 0
 
@@ -28,6 +31,7 @@ enum DIR {
 @Component
 export default class Box extends Vue {
   name = 'Box'
+
   dir?: string
   boxId = ++uid
   points: string[] = [
@@ -45,9 +49,11 @@ export default class Box extends Vue {
   @Prop() y!: number
   @Prop() width!: number
   @Prop() height!: number
+  @Prop() rotate!: number
 
   @Provide() scale: Coord = { x: 1, y: 1 }
   @Provide() offset: Coord = { x: 0, y: 0 }
+  @Provide() spin: number = 0
   @Provide() lock = false
 
   @State(state => state.editor.multiply) private multiply!: boolean
@@ -76,10 +82,22 @@ export default class Box extends Vue {
     return (
       <g
         stroke={this.boxBorder}
-        transform={`translate(${this.offset.x},${this.offset.y})`}
+        transform={this.transform}
         onMousedown={this.onMousedown}
         onMouseup={this.onMouseup}
         >
+        <circle
+          class='rotate-point'
+          vector-effect='non-scaling-stroke'
+          v-show={this.selected}
+          r={ROTATE_POINT_R}
+          cx={this.rotatePoint.x}
+          cy={this.rotatePoint.y}
+          onMousedown={this.onRotateStart}
+        ></circle>
+        <path
+          d={this.lineTop}
+        ></path>
         <rect
           class={`box-border ${this.selected ? 'selected' : ''}`}
           vector-effect='non-scaling-stroke'
@@ -89,10 +107,10 @@ export default class Box extends Vue {
           width={this.width}
           height={this.height}
           transform={this.translate}
-          >
-        </rect>
+        ></rect>
         <g
-          transform={this.translate}>
+          transform={this.translate}
+        >
           { this.$slots.default }
         </g>
         <g
@@ -116,6 +134,10 @@ export default class Box extends Vue {
     return this.selected && this.boxIds.length === 1
   }
 
+  get centerPoint (): Coord {
+    return { x: this.x + this.width / 2, y: this.y + this.height / 2 }
+  }
+
   get scalePoint (): Coord[] {
     let x = this.x
     let y = this.y
@@ -123,8 +145,8 @@ export default class Box extends Vue {
     let height = this.height * this.scale.y
     return this.points.map(p => {
       let l: Coord = {
-        x: this.x + width / 2,
-        y: this.y + height / 2
+        x: this.centerPoint.x,
+        y: this.centerPoint.y
       }
 
       p.split('-').map(dir => {
@@ -152,6 +174,25 @@ export default class Box extends Vue {
     return `translate(${this.x},${this.y}) scale(${this.scale.x},${this.scale.y}) translate(${-this.x},${-this.y})`
   }
 
+  get rotatePoint (): Coord {
+    return {
+      x: this.centerPoint.x,
+      y: this.y - ROTATE_POINT_TOP
+    }
+  }
+
+  get lineTop (): string {
+    return `M${this.rotatePoint.x} ${this.rotatePoint.y + ROTATE_POINT_R / 2} L${this.rotatePoint.x} ${this.y}`
+  }
+
+  get rotateAngle (): number {
+    return (this.rotate || 0) + this.spin
+  }
+
+  get transform (): string {
+    return `translate(${this.offset.x},${this.offset.y}) rotate(${this.rotateAngle} ${this.centerPoint.x} ${this.centerPoint.y})`
+  }
+
   onMousedown () {
     let selected = this.selected
     selectNum = this.boxIds.length
@@ -177,14 +218,13 @@ export default class Box extends Vue {
   }
 
   [`${MODEL.MOVE}End`] (e: MouseEvent) {
-    this.changeModel(MODEL.NONE)
     this.commitState()
   }
 
+  @stop
   onScaleStart (dir: string, e: MouseEvent) {
     this.dir = dir
     this.changeModel(MODEL.SCALE)
-    e.stopPropagation()
   }
 
   [MODEL.SCALE] (e: MouseEvent, startPoint: Coord) {
@@ -211,18 +251,32 @@ export default class Box extends Vue {
   }
 
   [`${MODEL.SCALE}End`] () {
-    this.changeModel(MODEL.NONE)
     this.commitState()
   }
 
+  @stop
+  onRotateStart () {
+    this.changeModel(MODEL.ROTATE)
+  }
+
+  [MODEL.ROTATE] (e: MouseEvent, startPoint: Coord) {
+    this.spin++
+  }
+
+  [`${MODEL.ROTATE}End`] () {
+    console.log('rotate end')
+    this.changeModel(MODEL.NONE)
+  }
+
   commitState () {
+    this.changeModel(MODEL.NONE)
+
     this.$emit('change', {
       offsetX: this.offset.x,
       offsetY: this.offset.y,
       scaleX: this.scale.x,
       scaleY: this.scale.y
     })
-
     this.offset.x = 0
     this.offset.y = 0
     this.scale.x = 1

@@ -1,6 +1,7 @@
 export enum MODEL {
   NONE = 'none',
   MOVE = 'box_move',
+  ROTATE = 'box_rotate',
   SELECT = 'box_select',
   MULTIPLY = 'box_multiply',
   CANCEL = 'box_cancel',

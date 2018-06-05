@@ -4,7 +4,7 @@ import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import '@/style/components/stage.less'
 
 import { ElementStyle } from '@/type'
-import { Size, Coord, Element, IndexElement } from '@/type/editor'
+import { Size, Coord, Element } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
@@ -75,10 +75,10 @@ export default class Stage extends Vue {
   }
 
   renderElements () {
-    return this.elements.map(ele => {
+    return this.elements.map((ele, i) => {
       switch (ele.type) {
         case DrawPen.name:
-          return <DrawPen element={ele} />
+          return <DrawPen element={ele} index={i} />
       }
     })
   }
@@ -131,8 +131,8 @@ export default class Stage extends Vue {
   onMouseup (e: MouseEvent) {
     switch (this.model) {
       case MODEL.PEN:
-        let path: IndexElement = {
-          i: this.elements.length,
+        if (!this.drawPath.length) return
+        let path: Element = {
           type: DrawPen.name,
           attrs: {
             x: pathSize.minX,

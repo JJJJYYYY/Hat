@@ -1,5 +1,3 @@
-import { IndexElement } from '@/type/editor'
-
 export function isObject (anyVal: any) {
   return anyVal !== null && typeof anyVal === 'object'
 }
