@@ -53,7 +53,9 @@ export default class Box extends Vue {
 
   @Provide() scale: Coord = { x: 1, y: 1 }
   @Provide() offset: Coord = { x: 0, y: 0 }
-  @Provide() spin: number = 0
+  @Provide() x2 = 0
+  @Provide() y2 = 0
+  @Provide() angle: number = 0
   @Provide() lock = false
 
   @State(state => state.editor.multiply) private multiply!: boolean
@@ -95,9 +97,12 @@ export default class Box extends Vue {
           cy={this.rotatePoint.y}
           onMousedown={this.onRotateStart}
         ></circle>
-        <path
-          d={this.lineTop}
-        ></path>
+        <line
+          x1={this.rotatePoint.x}
+          y1={this.rotatePoint.y}
+          x2={this.rotatePoint.x}
+          y2={this.y}
+        ></line>
         <rect
           class={`box-border ${this.selected ? 'selected' : ''}`}
           vector-effect='non-scaling-stroke'
@@ -135,7 +140,7 @@ export default class Box extends Vue {
   }
 
   get centerPoint (): Coord {
-    return { x: this.x + this.width / 2, y: this.y + this.height / 2 }
+    return { x: this.x + this.width * this.scale.x / 2, y: this.y + this.height * this.scale.y / 2 }
   }
 
   get scalePoint (): Coord[] {
@@ -181,12 +186,9 @@ export default class Box extends Vue {
     }
   }
 
-  get lineTop (): string {
-    return `M${this.rotatePoint.x} ${this.rotatePoint.y + ROTATE_POINT_R / 2} L${this.rotatePoint.x} ${this.y}`
-  }
-
   get rotateAngle (): number {
-    return (this.rotate || 0) + this.spin
+    console.log(this.rotate, this.angle)
+    return this.rotate + this.angle
   }
 
   get transform (): string {
@@ -260,12 +262,13 @@ export default class Box extends Vue {
   }
 
   [MODEL.ROTATE] (e: MouseEvent, startPoint: Coord) {
-    this.spin++
+    const { x, y } = this.centerPoint
+    const { offsetX: x1, offsetY: y1 } = e // todo：(y1 - y) / (x1 - x)
+    this.angle = Math.atan2(y1 - y, x1 - x) / Math.PI * 180 + 90 - this.rotate
   }
 
   [`${MODEL.ROTATE}End`] () {
-    console.log('rotate end')
-    this.changeModel(MODEL.NONE)
+    this.commitState()
   }
 
   commitState () {
@@ -275,11 +278,13 @@ export default class Box extends Vue {
       offsetX: this.offset.x,
       offsetY: this.offset.y,
       scaleX: this.scale.x,
-      scaleY: this.scale.y
+      scaleY: this.scale.y,
+      rotate: this.angle
     })
     this.offset.x = 0
     this.offset.y = 0
     this.scale.x = 1
     this.scale.y = 1
+    this.angle = 0
   }
 }

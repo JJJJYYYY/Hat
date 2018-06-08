@@ -11,15 +11,16 @@ export interface BoxStore {
   vm: Vue
 }
 
-export interface Attr extends Size {
+export interface Attrs extends Size {
   x: number
   y: number
+  rotate: number
   [key: string]: any
 }
 
-export interface Element {
+export interface HatElement {
   type: string
-  attrs: Attr
+  attrs: Attrs
   text?: string // only <text>
 }
 
@@ -44,5 +45,6 @@ export interface EleChangeStage {
   offsetX: number
   offsetY: number
   scaleX: number
-  scaleY: number
+  scaleY: number,
+  rotate: number
 }

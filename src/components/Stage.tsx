@@ -4,7 +4,7 @@ import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import '@/style/components/stage.less'
 
 import { ElementStyle } from '@/type'
-import { Size, Coord, Element } from '@/type/editor'
+import { Size, Coord, HatElement } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
@@ -36,7 +36,7 @@ export default class Stage extends Vue {
   @Action selectBox!: Function
   @State(state => state.editor.model) model!: string
   @State(state => state.editor.window) window!: Size
-  @State(state => state.editor.elements) elements!: Element[]
+  @State(state => state.editor.elements) elements!: HatElement[]
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
@@ -132,13 +132,14 @@ export default class Stage extends Vue {
     switch (this.model) {
       case MODEL.PEN:
         if (!this.drawPath.length) return
-        let path: Element = {
+        let path: HatElement = {
           type: DrawPen.name,
           attrs: {
             x: pathSize.minX,
             y: pathSize.minY,
             width: pathSize.maxX - pathSize.minX,
             height: pathSize.maxY - pathSize.minY,
+            rotate: 0,
             d: this.drawPath
           }
         }

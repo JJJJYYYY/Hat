@@ -12,13 +12,13 @@ Vue.config.productionTip = true
 
 declare global {
   namespace JSX {
-    interface Element extends VNode {}
+    interface HatElement extends VNode {}
     interface ElementClass extends Vue {}
     interface IntrinsicElements {
       [elem: string]: any
     }
     interface Attribute {
-      [elem: string]: any
+      [key: string]: any
     }
   }
 }

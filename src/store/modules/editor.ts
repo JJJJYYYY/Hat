@@ -4,7 +4,7 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Size, Element, Coord, EleBox } from '@/type/editor'
+import { Size, HatElement, Coord, EleBox } from '@/type/editor'
 
 let boxes: EleBox[] = []
 
@@ -15,8 +15,8 @@ interface EditorState {
   model: string,
   notActiveModel: string,
   boxIds: number[],
-  elements: Element[],
-  currEle?: Element
+  elements: HatElement[],
+  currEle?: HatElement
 }
 
 const editor: Module<EditorState, any> = {
@@ -55,6 +55,7 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.MOVE_ELE] (state: EditorState, { change, i, changeState, target }) {
       change.call(target, state.elements[i], changeState)
+      console.log(state.elements[i], changeState)
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
@@ -85,7 +86,7 @@ const editor: Module<EditorState, any> = {
       boxes = []
       state.boxIds = []
     },
-    [TYPE.ADD_ELE] (state: EditorState, ele: Element) {
+    [TYPE.ADD_ELE] (state: EditorState, ele: HatElement) {
       state.elements.push(ele)
       console.log(state.elements)
     }

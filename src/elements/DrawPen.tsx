@@ -2,7 +2,7 @@ import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
 
-import { Element, Coord, EleChangeStage } from '@/type/editor'
+import { HatElement, Coord, EleChangeStage } from '@/type/editor'
 
 import { copyElement } from '@/util'
 import { TYPE } from '@/enum/store'
@@ -16,7 +16,7 @@ const POINT_R = 0.5
 export default class DrawPen extends Vue {
   name = ELEMENT.DRAW_PEN
 
-  @Prop() element!: Element
+  @Prop() element!: HatElement
   @Prop() index!: number
 
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
@@ -28,6 +28,7 @@ export default class DrawPen extends Vue {
         y={this.element.attrs.y}
         width={this.element.attrs.width}
         height={this.element.attrs.height}
+        rotate={this.element.attrs.rotate}
         onChange={this.commitState}>
         <path
           d={this.d}
@@ -78,13 +79,14 @@ export default class DrawPen extends Vue {
   }
 
   changeState (
-    element: Element,
-    { offsetX, offsetY, scaleX, scaleY }: EleChangeStage
+    element: HatElement,
+    { offsetX, offsetY, scaleX, scaleY, rotate }: EleChangeStage
   ) {
     const { attrs } = element
 
     attrs.x += offsetX
     attrs.y += offsetY
+    attrs.rotate += rotate
     // this way will not update, #https://vuejs.org/v2/guide/list.html#Caveats
     // ```
     // attrs.d.forEach((p: number[]) => {

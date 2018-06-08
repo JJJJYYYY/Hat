@@ -2,7 +2,7 @@ import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
 
-import { Element, Coord } from '@/type/editor'
+import { HatElement, Coord } from '@/type/editor'
 
 import { copyElement } from '@/util'
 import { TYPE } from '@/enum/store'
@@ -13,7 +13,7 @@ import Box from './Box'
 export default class DrawPath extends Vue {
   name = 'DrawPath'
 
-  @Prop() element!: Element
+  @Prop() element!: HatElement
 
   @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
 
