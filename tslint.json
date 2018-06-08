@@ -1,5 +1,6 @@
 {
   "extends": "tslint-config-standard",
+  "rulesDirectory": "src",
   "globals": {
     "require": true
   }
