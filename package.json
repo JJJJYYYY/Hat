@@ -20,8 +20,14 @@
     "commit-msg": "node scripts/verify-commit-msg.js"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["tslint --fix", "git add"],
-    "*.less": ["stylelint --fix", "git add"]
+    "*.{ts,tsx}": [
+      "tslint --fix",
+      "git add"
+    ],
+    "*.less": [
+      "stylelint --fix",
+      "git add"
+    ]
   },
   "dependencies": {
     "vue": "^2.5.16",
@@ -75,7 +81,7 @@
     "tslint": "^5.10.0",
     "tslint-config-standard": "^7.0.0",
     "tslint-loader": "^3.6.0",
-    "typescript": "^2.8.3",
+    "typescript": "2.8.4",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^0.5.8",
     "vue-jest": "^1.0.2",
