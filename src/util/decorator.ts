@@ -35,8 +35,7 @@ export function stop (
     let result = method.apply(this, args)
 
     const e = args.find(a => a instanceof Event)
-    if (!e) console.warn('event not exist')
-    if (e) e.stopPropagation()
+    e ? e.stopPropagation() : console.warn('event not exist')
 
     return result
   }
@@ -56,8 +55,7 @@ export function prevent (
     let result = method.apply(this, args)
 
     const e = args.find(a => a instanceof Event)
-    if (!e) console.warn('event not exist')
-    if (e) e.preventDefault()
+    e ? e.preventDefault() : console.warn('event not exist')
 
     return result
   }
@@ -77,10 +75,6 @@ export function once (
     if (descriptor.value.__once) return
     let result = method.apply(this, args)
     descriptor.value.__once = true
-
-    const e = args.find(a => a instanceof Event)
-    if (!e) console.warn('event not exist')
-    if (e) e.preventDefault()
 
     return result
   }
