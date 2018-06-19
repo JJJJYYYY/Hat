@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue, { VNode } from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop, Watch, Model } from 'vue-property-decorator'
 import '@/style/elements/box.less'
@@ -32,7 +32,7 @@ enum DIR {
 export default class Box extends Vue {
   name = 'Box'
 
-  dir?: string
+  dir: string = ''
   boxId = ++uid
   points: string[] = [
     `${DIR.LEFT}-${DIR.BOTTOM}`,
@@ -53,8 +53,6 @@ export default class Box extends Vue {
 
   @Provide() scale: Coord = { x: 1, y: 1 }
   @Provide() offset: Coord = { x: 0, y: 0 }
-  @Provide() x2 = 0
-  @Provide() y2 = 0
   @Provide() angle: number = 0
   @Provide() lock = false
 
@@ -62,10 +60,10 @@ export default class Box extends Vue {
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @State(state => state.editor.stage) private stage!: Coord
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
-  @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
+  @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
   @Action('selectBox') private select!: Function
 
-  render () {
+  render (): VNode {
     const scalePoints = this.points.map((p, i) => {
       return (
         <circle
@@ -84,9 +82,9 @@ export default class Box extends Vue {
     return (
       <g
         stroke={this.boxBorder}
-        transform={this.transform}
         onMousedown={this.onMousedown}
         onMouseup={this.onMouseup}
+        transform={this.transform}
         >
         <circle
           class='rotate-point'
@@ -103,19 +101,17 @@ export default class Box extends Vue {
           x2={this.rotatePoint.x}
           y2={this.y}
         ></line>
-        <rect
-          class={`box-border ${this.selected ? 'selected' : ''}`}
-          vector-effect='non-scaling-stroke'
-          ref='svgBox'
-          x={this.x}
-          y={this.y}
-          width={this.width}
-          height={this.height}
-          transform={this.translate}
-        ></rect>
         <g
           transform={this.translate}
         >
+          <rect
+            class={`box-border ${this.selected ? 'selected' : ''}`}
+            vector-effect='non-scaling-stroke'
+            x={this.x}
+            y={this.y}
+            width={this.width}
+            height={this.height}
+          ></rect>
           { this.$slots.default }
         </g>
         <g
@@ -144,10 +140,11 @@ export default class Box extends Vue {
   }
 
   get scalePoint (): Coord[] {
-    let x = this.x
-    let y = this.y
-    let width = this.width * this.scale.x
-    let height = this.height * this.scale.y
+    const x = this.x
+    const y = this.y
+    const width = this.width * this.scale.x
+    const height = this.height * this.scale.y
+
     return this.points.map(p => {
       let l: Coord = {
         x: this.centerPoint.x,
@@ -187,7 +184,6 @@ export default class Box extends Vue {
   }
 
   get rotateAngle (): number {
-    console.log(this.rotate, this.angle)
     return this.rotate + this.angle
   }
 
@@ -230,7 +226,7 @@ export default class Box extends Vue {
   }
 
   [MODEL.SCALE] (e: MouseEvent, startPoint: Coord) {
-    (this.dir || '').split('-').forEach(l => {
+    this.dir.split('-').forEach(l => {
       switch (l) {
         case DIR.LEFT:
           let diffX = this.stage.x + this.x - e.pageX
@@ -250,6 +246,7 @@ export default class Box extends Vue {
           break
       }
     })
+    console.log('scale: x:', this.scale.x, ', y:',this.scale.y)
   }
 
   [`${MODEL.SCALE}End`] () {
@@ -264,7 +261,7 @@ export default class Box extends Vue {
   [MODEL.ROTATE] (e: MouseEvent, startPoint: Coord) {
     const { x, y } = this.centerPoint
     const { offsetX: x1, offsetY: y1 } = e // todo：(y1 - y) / (x1 - x)
-    this.angle = Math.atan2(y1 - y, x1 - x) / Math.PI * 180 + 90 - this.rotate
+    this.angle = Math.atan2(x1 - x, y - y1) / Math.PI * 180 - this.rotate
   }
 
   [`${MODEL.ROTATE}End`] () {
@@ -286,5 +283,9 @@ export default class Box extends Vue {
     this.scale.x = 1
     this.scale.y = 1
     this.angle = 0
+  }
+
+  afterRotate (angle: number) {
+    angle = this.rotate + angle
   }
 }

@@ -4,7 +4,7 @@ import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import '@/style/components/stage.less'
 
 import { ElementStyle } from '@/type'
-import { Size, Coord, HatElement } from '@/type/editor'
+import { Size, Coord, HatElement, EleLocation } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
@@ -51,7 +51,7 @@ export default class Stage extends Vue {
         class='stage'>
         <svg
           id='stage-svg'
-          version='1.2' baseProfile='full'
+          version='1.1' baseProfile='full'
           xmlns='http://www.w3.org/2000/svg'
           width={this.width}
           height={this.height}

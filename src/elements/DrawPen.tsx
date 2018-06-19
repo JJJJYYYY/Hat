@@ -19,7 +19,7 @@ export default class DrawPen extends Vue {
   @Prop() element!: HatElement
   @Prop() index!: number
 
-  @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
+  @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
 
   render () {
     return (
@@ -110,8 +110,7 @@ export default class DrawPen extends Vue {
   }
 
   commitState (changeState: EleChangeStage) {
-    console.log(this.index)
-    this.moveEle({
+    this.changeEle({
       i: this.index,
       changeState,
       change: this.changeState,

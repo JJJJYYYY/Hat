@@ -53,7 +53,7 @@ const editor: Module<EditorState, any> = {
     [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {
       state.notActiveModel = model
     },
-    [TYPE.MOVE_ELE] (state: EditorState, { change, i, changeState, target }) {
+    [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, target }) {
       change.call(target, state.elements[i], changeState)
       console.log(state.elements[i], changeState)
     },

@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue, { VNode } from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop } from 'vue-property-decorator'
 
@@ -15,16 +15,16 @@ export default class DrawPath extends Vue {
 
   @Prop() element!: HatElement
 
-  @Mutation(TYPE.MOVE_ELE) private moveEle!: Function
+  @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
 
-  render () {
+  render (): VNode {
     return (
       <Box
         x={this.element.attrs.x}
         y={this.element.attrs.y}
         width={this.element.attrs.width}
         height={this.element.attrs.height}
-        onMoveEnd='moveEnd'>
+      >
         <path
           d={this.element.attrs.d}
           stroke='#000'
@@ -36,13 +36,13 @@ export default class DrawPath extends Vue {
   }
 
   moveEnd ({ x, y }: Coord) {
-    let newEle = copyElement(this.element)
+    let newEle = copyElement<HatElement>(this.element)
     let i = 0
     newEle.attrs.d = newEle.attrs.d.replace(/-?\d{1,}(\.\d{1,})?/g, (m: string) => {
       return +m + (i++ % 2 === 0 ? x : y)
     })
     newEle.attrs.x += x
     newEle.attrs.y += y
-    this.moveEle(newEle)
+    this.changeEle(newEle)
   }
 }

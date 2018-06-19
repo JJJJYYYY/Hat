@@ -7,5 +7,5 @@ export enum TYPE {
   MULTIPLY = 'multiply',
   PRESS_MULTIPLY = 'press_ctrl',
   ADD_ELE = 'add_ele',
-  MOVE_ELE = 'move_ele'
+  CHANGE_ELE = 'move_ele'
 }

@@ -71,15 +71,12 @@ export function once (
 ) {
   let method = descriptor.value || noop
 
-  descriptor.value = function (...args: any[]) {
-    if (descriptor.value.__once) return
-    let result = method.apply(this, args)
-    descriptor.value.__once = true
+  descriptor.value = function () {
+    let result = method.apply(this, arguments)
+    method = noop
 
     return result
   }
-
-  descriptor.value.__once = false
 
   return descriptor
 }

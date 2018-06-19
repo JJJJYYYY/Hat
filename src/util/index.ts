@@ -1,19 +1,21 @@
-export function isObject (anyVal: any) {
+export function isObject (anyVal: any): boolean {
   return anyVal !== null && typeof anyVal === 'object'
 }
 
-export function deepCopy (obj: any) {
-  if (isObject(obj)) {
+export function deepCopy<T> (tar: T): T {
+  if (isObject(tar)) {
     let newObj = Object.create(null)
-    Object.keys(obj).forEach(k => {
-      newObj[k] = deepCopy(obj[k])
+    Object.keys(tar).forEach(k => {
+      newObj[k] = deepCopy<any>((tar as any)[k])
     })
     return newObj
+  } else if (Array.isArray(tar)) {
+    return tar.map((t: any) => deepCopy<any>(t)) as any
   } else {
-    return obj
+    return tar
   }
 }
 
 export const copyElement = deepCopy
 
-export function noop () {/* noop */}
+export function noop (): void {/* noop */}
