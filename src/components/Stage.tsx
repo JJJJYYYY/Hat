@@ -7,9 +7,9 @@ import { ElementStyle } from '@/type'
 import { Size, Coord, HatElement, EleLocation } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
+import ELEMENT from '@/enum/element'
 
-import DrawPen from '@/elements/DrawPen'
-import Box from '@/elements/Box'
+import ElementsMap from './Elements'
 
 import event from '@/util/event'
 import { drawCurvePath } from '@/util/draw'
@@ -26,9 +26,6 @@ let pathSize = Object.assign({}, defaultSize)
 
 @Component
 export default class Stage extends Vue {
-  // startPoint?: Coord
-  test = 1
-
   @Provide() width = 1000
   @Provide() height = 600
   @Provide() drawPath: number[][] = []
@@ -60,15 +57,15 @@ export default class Stage extends Vue {
           onMousedown={this.onMousedown}
           onMousemove={this.onMousemove}
           onMouseup={this.onMouseup}
-          >
+        >
           <path
             stroke='#000'
             fill='none'
             stroke-dasharray='none'
             d={this.realDrawPath}
-            >
+          >
           </path>
-          { this.renderElements() }
+          {this.renderElements()}
         </svg>
       </div >
     )
@@ -76,10 +73,8 @@ export default class Stage extends Vue {
 
   renderElements () {
     return this.elements.map((ele, i) => {
-      switch (ele.type) {
-        case DrawPen.name:
-          return <DrawPen element={ele} index={i} />
-      }
+      const ELEMENT = ElementsMap.get(ele.type)
+      return <ELEMENT element={ele} index={i} />
     })
   }
 
@@ -133,7 +128,7 @@ export default class Stage extends Vue {
       case MODEL.PEN:
         if (!this.drawPath.length) return
         let path: HatElement = {
-          type: DrawPen.name,
+          type: ELEMENT.DRAW_PEN,
           attrs: {
             x: pathSize.minX,
             y: pathSize.minY,
@@ -150,8 +145,8 @@ export default class Stage extends Vue {
         break
     }
 
-    // this.changeModel(MODEL.NONE)
-    // event.$emit(MODEL.NONE, e)
+  // this.changeModel(MODEL.NONE)
+  // event.$emit(MODEL.NONE, e)
   }
 
   addDrawPath (point: number[]) {
