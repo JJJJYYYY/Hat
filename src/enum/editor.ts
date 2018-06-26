@@ -7,6 +7,8 @@ export enum MODEL {
   CANCEL = 'box_cancel',
   CLEAR = 'box_clear',
   SCALE = 'box_scale',
-  PEN = 'draw_pen',
-  LINE = 'draw_line'
+
+  DRAW_PEN = 'draw_pen',
+  DRAW_LINE = 'draw_line',
+  DRAW_CIRCLE = 'draw_circle'
 }

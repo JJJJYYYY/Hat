@@ -7,6 +7,8 @@ import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/type'
 import { Coord, EleBox } from '@/type/editor'
+
+import { noop } from '@/util'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 import { stop } from '@/util/decorator'
@@ -50,6 +52,7 @@ export default class Box extends Vue {
   @Prop() width!: number
   @Prop() height!: number
   @Prop() rotate!: number
+  @Prop() scaling?: Function
 
   @Provide() scale: Coord = { x: 1, y: 1 }
   @Provide() offset: Coord = { x: 0, y: 0 }
@@ -226,6 +229,9 @@ export default class Box extends Vue {
   }
 
   [MODEL.SCALE] (e: MouseEvent, startPoint: Coord) {
+    if (this.scaling) {
+      if (!this.scaling(this.dir, this.scale, this.offset)) return
+    }
     this.dir.split('-').forEach(l => {
       switch (l) {
         case DIR.LEFT:
@@ -246,7 +252,6 @@ export default class Box extends Vue {
           break
       }
     })
-    console.log('scale: x:', this.scale.x, ', y:',this.scale.y)
   }
 
   [`${MODEL.SCALE}End`] () {

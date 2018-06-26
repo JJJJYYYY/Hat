@@ -31,7 +31,7 @@ export interface Coord {
 }
 
 export interface EleLocation extends Coord, Size {
-  i: number // index
+  i?: number // index
 }
 
 export interface EleBox extends Vue {

@@ -7,25 +7,26 @@ import { ElementStyle } from '@/type'
 import { Size, Coord, HatElement, EleLocation } from '@/type/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
-import ELEMENT from '@/enum/element'
 
 import ElementsMap from './Elements'
+import Path from './Elements/Path'
+import Draw from '@/components/Elements/Draw'
 
+import { noop, empty } from '@/util'
 import event from '@/util/event'
-import { drawCurvePath } from '@/util/draw'
+import getDrawMethod from '@/util/draw'
 import { self, once } from '@/util/decorator'
 
-const defaultSize = {
-  minX: window.innerWidth,
-  minY: window.innerHeight,
-  maxX: 0,
-  maxY: 0
-}
 let oldPath = ''
-let pathSize = Object.assign({}, defaultSize)
+
+const DrawModel = [ MODEL.DRAW_LINE, MODEL.DRAW_PEN, MODEL.DRAW_CIRCLE ]
+function isDraw (model: string) {
+  return (DrawModel as string[]).includes(model)
+}
 
 @Component
 export default class Stage extends Vue {
+  @Provide() currDraw?: HatElement
   @Provide() width = 1000
   @Provide() height = 600
   @Provide() drawPath: number[][] = []
@@ -42,53 +43,56 @@ export default class Stage extends Vue {
   @Getter private getElementCount!: number
 
   render (): VNode {
+    const currDraw = this.currDraw
+    const last = this.elements.length
+
     return (
       <div
         ref='stage'
-        class='stage'>
+        class='stage'
+      >
         <svg
           id='stage-svg'
           version='1.1' baseProfile='full'
           xmlns='http://www.w3.org/2000/svg'
           width={this.width}
           height={this.height}
-          style={this.size}
+          style={this.style}
           onClick={this.onClick}
           onMousedown={this.onMousedown}
           onMousemove={this.onMousemove}
           onMouseup={this.onMouseup}
         >
-          <path
-            stroke='#000'
-            fill='none'
-            stroke-dasharray='none'
-            d={this.realDrawPath}
-          >
-          </path>
-          {this.renderElements()}
+          { this.renderElements() }
+          <Path
+            d={this.realPath}
+          />
         </svg>
       </div >
     )
   }
 
-  renderElements () {
-    return this.elements.map((ele, i) => {
-      const ELEMENT = ElementsMap.get(ele.type)
-      return <ELEMENT element={ele} index={i} />
-    })
+  renderElements (): VNode[] {
+    return this.elements.map(this.getElement)
   }
 
-  get size (): ElementStyle {
+  getElement (ele: HatElement, i: number) {
+    const ELEMENT = ElementsMap.get(ele.type)
+    return ELEMENT
+      ? <ELEMENT element={ele} index={i} key={i} />
+      : null
+  }
+
+  get realPath () {
+    const draw = this.currDraw ? getDrawMethod(this.currDraw.type) : empty
+
+    return oldPath = draw(this.drawPath, oldPath)
+  }
+
+  get style (): ElementStyle {
     return {
       background: `${'#fff'}`
     }
-  }
-
-  get realDrawPath (): string {
-    let drawPath = this.drawPath
-    oldPath = drawCurvePath(oldPath, drawPath)
-
-    return oldPath
   }
 
   @Watch('window', { deep: true })
@@ -107,54 +111,57 @@ export default class Stage extends Vue {
 
   @self
   onMousedown (e: MouseEvent) {
-    switch (this.model) {
-      case MODEL.PEN:
-        this.addDrawPath([e.offsetX, e.offsetY])
-        break
+    if (isDraw(this.model)) {
+      this.createDraw(this.model, [e.offsetX, e.offsetY])
     }
   }
 
   @self
   onMousemove (e: MouseEvent) {
-    switch (this.model) {
-      case MODEL.PEN:
-        this.drawPath.length > 0 && this.addDrawPath([e.offsetX, e.offsetY])
-        break
+    if (isDraw(this.model)) {
+      this.draw([e.offsetX, e.offsetY])
     }
   }
 
   onMouseup (e: MouseEvent) {
-    switch (this.model) {
-      case MODEL.PEN:
-        if (!this.drawPath.length) return
-        let path: HatElement = {
-          type: ELEMENT.DRAW_PEN,
-          attrs: {
-            x: pathSize.minX,
-            y: pathSize.minY,
-            width: pathSize.maxX - pathSize.minX,
-            height: pathSize.maxY - pathSize.minY,
-            rotate: 0,
-            d: this.drawPath
-          }
-        }
-        pathSize = Object.assign({}, defaultSize)
-        this.addElement(path)
-        this.drawPath = []
-        oldPath = ''
-        break
-    }
+    if (this.currDraw) {
+      this.drawPoint([e.offsetX, e.offsetY])
 
-  // this.changeModel(MODEL.NONE)
-  // event.$emit(MODEL.NONE, e)
+      const drawPath = (getDrawMethod(this.currDraw.type) as any).getPath(this.drawPath)
+
+      Object.assign(this.currDraw.attrs, {
+        rotate: 0,
+        d: drawPath
+      })
+
+      this.addElement(this.currDraw)
+      this.currDraw = void 0
+      this.drawPath = []
+    }
   }
 
-  addDrawPath (point: number[]) {
-    pathSize.minX = Math.min(point[0], pathSize.minX)
-    pathSize.minY = Math.min(point[1], pathSize.minY)
-    pathSize.maxX = Math.max(point[0], pathSize.maxX)
-    pathSize.maxY = Math.max(point[1], pathSize.maxY)
+  draw (point: number[]) {
+    if (this.currDraw) {
+      this.drawPoint(point)
+    }
+  }
 
+  createDraw (type: string, point: number[]) {
+    this.currDraw = {
+      type: type,
+      attrs: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        rotate: 0,
+        d: []
+      }
+    }
+    this.drawPoint(point)
+  }
+
+  drawPoint (point: number[]) {
     this.drawPath.push(point)
   }
 }

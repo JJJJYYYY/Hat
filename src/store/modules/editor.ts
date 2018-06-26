@@ -4,7 +4,7 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Size, HatElement, Coord, EleBox } from '@/type/editor'
+import { Size, HatElement, Coord, EleBox, EleLocation } from '@/type/editor'
 
 let boxes: EleBox[] = []
 
@@ -53,9 +53,18 @@ const editor: Module<EditorState, any> = {
     [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {
       state.notActiveModel = model
     },
-    [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, target }) {
-      change.call(target, state.elements[i], changeState)
-      console.log(state.elements[i], changeState)
+    [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, context }) {
+      change.call(context, state.elements[i], changeState)
+    },
+    [TYPE.CHANGE_ELE_LOC] (state: EditorState, { i = 0, x, y, width, height }: EleLocation) {
+      const ele = state.elements[i]
+
+      if (ele) {
+        ele.attrs.x = x
+        ele.attrs.y = y
+        ele.attrs.width = width
+        ele.attrs.height = height
+      }
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
@@ -88,7 +97,6 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: HatElement) {
       state.elements.push(ele)
-      console.log(state.elements)
     }
   },
   actions: {
@@ -104,8 +112,6 @@ const editor: Module<EditorState, any> = {
       } else {
         commit(MODEL.CLEAR)
       }
-      console.log('select: ', state.boxIds)
-      console.log('select: ', boxes)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)

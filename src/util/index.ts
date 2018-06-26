@@ -1,3 +1,7 @@
+export function isDef (val: any): boolean {
+  return typeof val !== null && typeof val !== undefined
+}
+
 export function isObject (anyVal: any): boolean {
   return anyVal !== null && typeof anyVal === 'object'
 }
@@ -19,3 +23,4 @@ export function deepCopy<T> (tar: T): T {
 export const copyElement = deepCopy
 
 export function noop (): void {/* noop */}
+export function empty (): string { return '' }

@@ -37,7 +37,11 @@ export default class Editor extends Vue {
         onMousemove={this.onMousemove}
         onMouseup={this.onMouseup}>
         <Stage />
-        <a onClick={this.onChangeModel.bind(this, this.MODEL_PEN)}>pen</a>
+        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_PEN)}>1. pen</a>
+        <br/>
+        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_LINE)}>2. line</a>
+        <br/>
+        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_CIRCLE)}>3. circle</a>
       </div >
     )
   }
@@ -48,10 +52,6 @@ export default class Editor extends Vue {
       height: `${this.window.height}px`,
       background: `${'#eee'}`
     }
-  }
-
-  get MODEL_PEN (): string {
-    return MODEL.PEN
   }
 
   onKeydown (e: KeyboardEvent) {
