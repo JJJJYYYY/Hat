@@ -29,7 +29,7 @@ export default class Editor extends Vue {
   render (h: CreateElement): VNode {
     return (
       <div class='editor full'
-        tabindex='1'
+        tabIndex='0'
         style={this.cptFullSize}
         onKeydown={this.onKeydown}
         onKeyup={this.onKeyup}
