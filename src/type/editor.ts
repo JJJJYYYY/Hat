@@ -36,6 +36,7 @@ export interface EleLocation extends Coord, Size {
 
 export interface EleBox extends Vue {
   boxId: number
+  commit: Function
   [MODEL.SCALE]: Function
   [MODEL.MOVE]: Function
   [MODEL.ROTATE]: Function

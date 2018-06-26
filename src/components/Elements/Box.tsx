@@ -205,7 +205,8 @@ export default class Box extends Vue {
   }
 
   onMouseup (e: MouseEvent) {
-    if (selectNum > 1 &&
+    if (
+      selectNum > 1 &&
       this.boxIds.length === selectNum && // prevent repeat call `selectBox`
       Date.now() - clickTime < 300 // simulate click
     ) {
@@ -216,10 +217,6 @@ export default class Box extends Vue {
   [MODEL.MOVE] (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
     this.offset.x = e.pageX - this.stage.x - offset.x
     this.offset.y = e.pageY - this.stage.y - offset.y
-  }
-
-  [`${MODEL.MOVE}End`] (e: MouseEvent) {
-    this.commitState()
   }
 
   @stop
@@ -254,10 +251,6 @@ export default class Box extends Vue {
     })
   }
 
-  [`${MODEL.SCALE}End`] () {
-    this.commitState()
-  }
-
   @stop
   onRotateStart () {
     this.changeModel(MODEL.ROTATE)
@@ -269,11 +262,7 @@ export default class Box extends Vue {
     this.angle = Math.atan2(x1 - x, y - y1) / Math.PI * 180 - this.rotate
   }
 
-  [`${MODEL.ROTATE}End`] () {
-    this.commitState()
-  }
-
-  commitState () {
+  commit () {
     this.changeModel(MODEL.NONE)
 
     this.$emit('change', {

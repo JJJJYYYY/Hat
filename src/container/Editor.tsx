@@ -26,11 +26,12 @@ export default class Editor extends Vue {
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Action private pressMultiply!: Function
 
-  render (h: CreateElement): VNode {
+  render (): VNode {
     return (
-      <div class='editor full'
+      <div
         tabIndex='0'
-        style={this.cptFullSize}
+        class='editor full'
+        style={this.editorStyle}
         onKeydown={this.onKeydown}
         onKeyup={this.onKeyup}
         onMousedown={this.onMousedown}
@@ -46,7 +47,7 @@ export default class Editor extends Vue {
     )
   }
 
-  get cptFullSize (): ElementStyle {
+  get editorStyle (): ElementStyle {
     return {
       width: `${this.window.width}px`,
       height: `${this.window.height}px`,
@@ -84,43 +85,17 @@ export default class Editor extends Vue {
 
   onMousemove (e: MouseEvent) {
     switch (this.model) {
-      case MODEL.MOVE:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          box[MODEL.MOVE](e, this.startPoint)
-        })
-        break
-      case MODEL.SCALE:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          box[MODEL.SCALE](e, this.startPoint)
-        })
-        break
-      case MODEL.ROTATE:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          box[MODEL.ROTATE](e, this.startPoint)
-        })
-        break
       default:
+        this.selectedBoxes.forEach((box: EleBox) => {
+          (box as any)[this.model](e, this.startPoint)
+        })
     }
   }
 
   onMouseup (e: MouseEvent) {
     switch (this.model) {
-      case MODEL.MOVE:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          (box as any)[`${MODEL.MOVE}End`](e)
-        })
-        break
-      case MODEL.SCALE:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          (box as any)[`${MODEL.SCALE}End`](e)
-        })
-        break
-      case MODEL.ROTATE:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          (box as any)[`${MODEL.ROTATE}End`](e)
-        })
-        break
       default:
+        this.selectedBoxes.forEach((box: EleBox) => box.commit(e))
         return
     }
   }
