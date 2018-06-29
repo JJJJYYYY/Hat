@@ -43,9 +43,6 @@ export default class Stage extends Vue {
   @Getter private getElementCount!: number
 
   render (): VNode {
-    const currDraw = this.currDraw
-    const last = this.elements.length
-
     return (
       <div
         ref='stage'

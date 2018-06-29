@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import { createDecorator } from 'vue-class-component'
 
 import { noop } from '@/util'
 
@@ -32,12 +31,10 @@ export function stop (
   let method = descriptor.value || noop
 
   descriptor.value = function (...args: any[]) {
-    let result = method.apply(this, args)
-
-    const e = args.find(a => a instanceof Event)
+    const e: Event = args.find(a => a instanceof Event)
     e ? e.stopPropagation() : console.warn('event not exist')
 
-    return result
+    return method.apply(this, args)
   }
 
   return descriptor
@@ -52,12 +49,10 @@ export function prevent (
   let method = descriptor.value || noop
 
   descriptor.value = function (...args: any[]) {
-    let result = method.apply(this, args)
-
-    const e = args.find(a => a instanceof Event)
+    const e: Event = args.find(a => a instanceof Event)
     e ? e.preventDefault() : console.warn('event not exist')
 
-    return result
+    return method.apply(this, args)
   }
 
   return descriptor
