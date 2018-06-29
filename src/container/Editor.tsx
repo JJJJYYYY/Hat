@@ -43,6 +43,8 @@ export default class Editor extends Vue {
         <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_LINE)}>2. line</a>
         <br/>
         <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_CIRCLE)}>3. circle</a>
+        <br/>
+        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_POLY)}>4. polyline</a>
       </div >
     )
   }
@@ -85,6 +87,8 @@ export default class Editor extends Vue {
 
   onMousemove (e: MouseEvent) {
     switch (this.model) {
+      case MODEL.NONE:
+        break
       default:
         this.selectedBoxes.forEach((box: EleBox) => {
           (box as any)[this.model](e, this.startPoint)
@@ -94,6 +98,8 @@ export default class Editor extends Vue {
 
   onMouseup (e: MouseEvent) {
     switch (this.model) {
+      case MODEL.NONE:
+        break
       default:
         this.selectedBoxes.forEach((box: EleBox) => box.commit(e))
         return

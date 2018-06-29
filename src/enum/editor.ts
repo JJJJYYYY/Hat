@@ -10,5 +10,6 @@ export enum MODEL {
 
   DRAW_PEN = 'draw_pen',
   DRAW_LINE = 'draw_line',
-  DRAW_CIRCLE = 'draw_circle'
+  DRAW_CIRCLE = 'draw_circle',
+  DRAW_POLY = 'draw_poly'
 }

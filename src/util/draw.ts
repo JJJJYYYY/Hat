@@ -16,9 +16,9 @@ const firstAndLast: PropertyDescriptor = {
 
 Object.defineProperty(empty, 'getPath', origin)
 
-const POINT_R = 1
 const lastReg = /\sL(\d|\s)+$/g
 function drawPen (path: number[][], old?: string): string {
+  const POINT_R = 1
   switch (path.length) {
     case 0:
       return ''
@@ -83,10 +83,28 @@ function drawCircle (path: number[][]): string {
 }
 Object.defineProperty(drawCircle, 'getPath', firstAndLast)
 
+function drawPoly (path: number[][]): string {
+  if (path.length > 1) {
+    return path.reduce((d, p, i) => {
+      switch (i) {
+        case 0: // first point
+          return `M${p[0]} ${p[1]}`
+        default:
+          {
+            return `${d} L${p[0]} ${p[1]}`
+          }
+      }
+    }, '')
+  }
+  return ''
+}
+Object.defineProperty(drawPoly, 'getPath', origin)
+
 const drawMethods = new Map<string, Function>([
   [MODEL.DRAW_PEN, drawPen],
   [MODEL.DRAW_LINE, drawLine],
-  [MODEL.DRAW_CIRCLE, drawCircle]
+  [MODEL.DRAW_CIRCLE, drawCircle],
+  [MODEL.DRAW_POLY, drawPoly]
 ])
 
 export default function getDrawMethod (type: string): Function {
