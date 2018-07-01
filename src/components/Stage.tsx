@@ -216,7 +216,7 @@ export default class Stage extends Vue {
   @ctrl
   @prevent
   onWindowScale ({ deltaY }: WheelEvent) {
-    const ratio = deltaY > 0
+    const ratio = deltaY < 0
       ? this.ratio + 0.01
       : Math.max(this.ratio - 0.01, 0.05)
 
