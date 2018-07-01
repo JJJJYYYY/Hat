@@ -62,7 +62,7 @@ export function prevent (
 export function once (
   target: Vue,
   name: string,
-  descriptor: TypedPropertyDescriptor<any>
+  descriptor: TypedPropertyDescriptor<(...args: any[]) => void>
 ) {
   let method = descriptor.value || noop
 
@@ -75,3 +75,29 @@ export function once (
 
   return descriptor
 }
+
+function createKeyDecorator (
+  keyCode: string
+) {
+  return function (
+    target: Vue,
+    name: string,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => void>
+  ) {
+    let method = descriptor.value || noop
+
+    descriptor.value = function (...args: any[]) {
+      const e = args.find(a => a instanceof MouseEvent)
+      if (e[`${keyCode}Key`]) {
+        return method.apply(this, args)
+      }
+    }
+
+    return descriptor
+  }
+}
+
+export const ctrl = createKeyDecorator('ctrl')
+// export const alt = createKeyDecorator('alt')
+// export const shift = createKeyDecorator('shift')
+// export const meta = createKeyDecorator('meta')

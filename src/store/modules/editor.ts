@@ -10,10 +10,11 @@ let boxes: EleBox[] = []
 
 interface EditorState {
   window: Size,
-  stage: Coord,
+  stage: Coord & Size,
   multiply: boolean,
   model: string,
   notActiveModel: string,
+  ratio: number,
   boxIds: number[],
   elements: HatElement[],
   currEle?: HatElement
@@ -27,11 +28,14 @@ const editor: Module<EditorState, any> = {
     },
     stage: {
       x: 0,
-      y: 0
+      y: 0,
+      width: 600,
+      height: 600
     },
     multiply: false,
     model: MODEL.NONE,
     notActiveModel: MODEL.NONE,
+    ratio: 1,
     boxIds: [],
     elements: [],
     currEle: undefined
@@ -49,9 +53,6 @@ const editor: Module<EditorState, any> = {
     [TYPE.CHANGE_MODEL] (state: EditorState, model: string) {
       console.log('currModel: ', model)
       state.model = model
-    },
-    [TYPE.CHANGE_NOT_ACTIVE_MODEL] (state: EditorState, model: string) {
-      state.notActiveModel = model
     },
     [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, context }) {
       change.call(context, state.elements[i], changeState)
@@ -97,6 +98,9 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: HatElement) {
       state.elements.push(ele)
+    },
+    [TYPE.SCALE_RADIO] (state: EditorState, ratio: number) {
+      state.ratio = ratio
     }
   },
   actions: {

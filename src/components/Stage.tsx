@@ -15,11 +15,11 @@ import Draw from '@/components/Elements/Draw'
 import { noop, empty } from '@/util'
 import event from '@/util/event'
 import getDrawMethod from '@/util/draw'
-import { self, once } from '@/util/decorator'
+import { self, once, ctrl, prevent } from '@/util/decorator'
 
 let oldPath = ''
 
-const DrawModel = [ MODEL.DRAW_LINE, MODEL.DRAW_PEN, MODEL.DRAW_CIRCLE ]
+const DrawModel = [ MODEL.DRAW_LINE, MODEL.DRAW_PEN, MODEL.DRAW_CIRCLE, MODEL.DRAW_POLY ]
 function isDraw (model: string) {
   return (DrawModel as string[]).includes(model)
 }
@@ -27,17 +27,19 @@ function isDraw (model: string) {
 @Component
 export default class Stage extends Vue {
   @Provide() currDraw?: HatElement
-  @Provide() width = 1000
-  @Provide() height = 600
   @Provide() drawPath: number[][] = []
 
   @Action selectBox!: Function
+  @State(state => state.editor.stage.width) width!: number
+  @State(state => state.editor.stage.height) height!: number
   @State(state => state.editor.model) model!: string
+  @State(state => state.editor.ratio) ratio!: number
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.elements) elements!: HatElement[]
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
+  @Mutation(TYPE.SCALE_RADIO) private scaleRatio!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
   @Getter private getElementCount!: number
@@ -56,6 +58,7 @@ export default class Stage extends Vue {
           height={this.height}
           style={this.style}
           onClick={this.onClick}
+          onDblclick={this.onDblclick}
           onMousedown={this.onMousedown}
           onMousemove={this.onMousemove}
           onMouseup={this.onMouseup}
@@ -88,7 +91,8 @@ export default class Stage extends Vue {
 
   get style (): ElementStyle {
     return {
-      background: `${'#fff'}`
+      background: `${'#fff'}`,
+      transform: `scale(${this.ratio})`
     }
   }
 
@@ -101,45 +105,70 @@ export default class Stage extends Vue {
     })
   }
 
+  created () {
+    // window reset
+    window.addEventListener('resize', this.onResizeWindow)
+    window.addEventListener('load', this.onResizeWindow)
+    window.addEventListener('mousewheel', this.onWindowScale)
+  }
+
+  destroyed () {
+    window.removeEventListener('resize', this.onResizeWindow)
+    window.removeEventListener('load', this.onResizeWindow)
+    window.removeEventListener('mousewheel', this.onWindowScale)
+  }
+
   @self
   onClick () {
     this.selectBox()
   }
 
   @self
+  onDblclick () {
+    switch (this.model) {
+      case MODEL.DRAW_POLY:
+        this.drawEnd()
+        break
+      default:
+    }
+  }
+
+  @self
   onMousedown (e: MouseEvent) {
     if (isDraw(this.model)) {
-      this.createDraw(this.model, [e.offsetX, e.offsetY])
+      switch (this.model) {
+        case MODEL.DRAW_POLY:
+          if (!this.currDraw) {
+            this.createDraw(this.model, [e.offsetX, e.offsetY])
+          }
+          break
+        default:
+          this.createDraw(this.model, [e.offsetX, e.offsetY])
+      }
     }
   }
 
   @self
   onMousemove (e: MouseEvent) {
     if (isDraw(this.model)) {
-      this.draw([e.offsetX, e.offsetY])
+      switch (this.model) {
+        case MODEL.DRAW_POLY:
+          break
+        default:
+          this.drawPoint([e.offsetX, e.offsetY])
+      }
     }
   }
 
   onMouseup (e: MouseEvent) {
     if (this.currDraw) {
       this.drawPoint([e.offsetX, e.offsetY])
-
-      const drawPath = (getDrawMethod(this.currDraw.type) as any).getPath(this.drawPath)
-
-      Object.assign(this.currDraw.attrs, {
-        rotate: 0,
-        d: drawPath
-      })
-
-      this.addElement(this.currDraw)
-      this.currDraw = void 0
-      this.drawPath = []
-    }
-  }
-
-  draw (point: number[]) {
-    if (this.currDraw) {
-      this.drawPoint(point)
+      switch (this.model) {
+        case MODEL.DRAW_POLY:
+          break
+        default:
+          this.drawEnd()
+      }
     }
   }
 
@@ -159,6 +188,38 @@ export default class Stage extends Vue {
   }
 
   drawPoint (point: number[]) {
-    this.drawPath.push(point)
+    this.currDraw && this.drawPath.push(point)
+  }
+
+  drawEnd () {
+    if (this.currDraw) {
+      const drawPath = (getDrawMethod(this.currDraw.type) as any).getPath(this.drawPath)
+
+      Object.assign(this.currDraw.attrs, {
+        rotate: 0,
+        d: drawPath
+      })
+
+      this.addElement(this.currDraw)
+      this.currDraw = void 0
+      this.drawPath = []
+    }
+  }
+
+  onResizeWindow () {
+    this.$store.commit(TYPE.RESIZE_WINDOW, {
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
+  }
+
+  @ctrl
+  @prevent
+  onWindowScale ({ deltaY }: WheelEvent) {
+    const ratio = deltaY > 0
+      ? this.ratio + 0.01
+      : Math.max(this.ratio - 0.01, 0.05)
+
+    this.scaleRatio(ratio)
   }
 }

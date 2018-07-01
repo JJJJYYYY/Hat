@@ -7,7 +7,9 @@ import { KEY_CODE } from '@/enum/common'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
+import Ruler from '@/components/Panel/Ruler'
 import Stage from '@/components/Stage'
+import MenuBox from '@/components/Panel/Base/MenuBox'
 
 import event from '@/util/event'
 
@@ -38,13 +40,15 @@ export default class Editor extends Vue {
         onMousemove={this.onMousemove}
         onMouseup={this.onMouseup}>
         <Stage />
-        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_PEN)}>1. pen</a>
+        <Ruler />
+        {/* <MenuBox /> */}
+        {/* <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_PEN)}>1. pen</a>
         <br/>
         <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_LINE)}>2. line</a>
         <br/>
         <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_CIRCLE)}>3. circle</a>
         <br/>
-        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_POLY)}>4. polyline</a>
+        <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_POLY)}>4. polyline</a> */}
       </div >
     )
   }
@@ -91,7 +95,7 @@ export default class Editor extends Vue {
         break
       default:
         this.selectedBoxes.forEach((box: EleBox) => {
-          (box as any)[this.model](e, this.startPoint)
+          (box as any)[this.model] && (box as any)[this.model](e, this.startPoint)
         })
     }
   }

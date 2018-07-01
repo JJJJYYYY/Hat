@@ -1,8 +1,14 @@
 @primary: blue;
+@default: #f2f6fc;
 
 .full (@w: 100%, @h: 100%) {
   width: @w;
   height: @h;
+}
+.position-absolute (@top: 0, @left: 0) {
+  position: absolute;
+  top: @top;
+  left: @top;
 }
 .position-center (@type: absolute) {
   position: @type;

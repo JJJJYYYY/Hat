@@ -29,20 +29,11 @@ const app = new Vue({
   router,
   store,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  created () {
+    // prevent contextmenu
+    document.addEventListener('contextmenu', (e: MouseEvent) => {
+      e.preventDefault()
+    })
+  }
 })
-
-// prevent contextmenu
-document.addEventListener('contextmenu', (e: MouseEvent) => {
-  e.preventDefault()
-})
-
-function resizeWindow () {
-  app.$store.commit(TYPE.RESIZE_WINDOW, {
-    width: window.innerWidth,
-    height: window.innerHeight
-  })
-}
-// window reset
-window.addEventListener('resize', resizeWindow)
-window.addEventListener('load', resizeWindow)
