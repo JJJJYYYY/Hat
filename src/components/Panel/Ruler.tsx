@@ -26,6 +26,10 @@ function getOrder (num: number): number {
   }
 }
 
+function num2K (num: number): string | number {
+  return Math.abs(num) >= 1000 ? `${num / 1000}K` : num
+}
+
 @Component
 export default class Ruler extends Vue {
   tickTimer?: number
@@ -107,7 +111,7 @@ export default class Ruler extends Vue {
       len = i * step + x
       ctx.moveTo(len, 0)
       ctx.lineTo(len, canvasSize)
-      ctx.strokeText(`${~~(i * unit)}`, len + 2, 8)
+      ctx.strokeText(`${num2K(~~(i * unit))}`, len + 2, 8)
       for (let j = 1; j < 10; j++) {
         len += step / 10
         ctx.moveTo(len, j % 2 === 0 ? shortLine : midLine)
@@ -131,7 +135,7 @@ export default class Ruler extends Vue {
       len = i * step + y
       ctx.moveTo(0, len)
       ctx.lineTo(canvasSize, len)
-      ctx.strokeText(`${~~(i * unit)}`, 0, len + 10)
+      ctx.strokeText(`${num2K(~~(i * unit))}`, 0, len + 10)
       for (let j = 1; j < 10; j++) {
         len += step / 10
         ctx.moveTo(j % 2 === 0 ? shortLine : midLine, len)
