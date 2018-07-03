@@ -7,9 +7,8 @@ import { KEY_CODE } from '@/enum/common'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
-import Ruler from '@/components/Panel/Ruler'
 import Stage from '@/components/Stage'
-import MenuBox from '@/components/Panel/Base/MenuBox'
+import Tools from '@/components/Panel/Tools'
 
 import event from '@/util/event'
 
@@ -24,7 +23,6 @@ export default class Editor extends Vue {
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Getter selectedBoxes!: EleBox[]
-  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Action private pressMultiply!: Function
 
@@ -38,9 +36,10 @@ export default class Editor extends Vue {
         onKeyup={this.onKeyup}
         onMousedown={this.onMousedown}
         onMousemove={this.onMousemove}
-        onMouseup={this.onMouseup}>
+        onMouseup={this.onMouseup}
+      >
+        <Tools />
         <Stage />
-        <Ruler />
         {/* <MenuBox /> */}
         {/* <a onClick={this.onChangeModel.bind(this, MODEL.DRAW_PEN)}>1. pen</a>
         <br/>
@@ -75,10 +74,6 @@ export default class Editor extends Vue {
         this.pressMultiply(false)
         break
     }
-  }
-
-  onChangeModel (model: string) {
-    this.changeModel(model === this.model ? MODEL.NONE : model)
   }
 
   onMousedown (e: MouseEvent) {

@@ -1,11 +1,11 @@
 import Vue from 'vue'
-import Component from 'vue-class-component'
+import { Component } from 'vue-property-decorator'
 
 @Component
-export default class extends Vue {
+export default class Button extends Vue {
   render () {
     return (
-      <button></button>
+      <div>Button</div>
     )
   }
 }

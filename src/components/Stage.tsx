@@ -1,7 +1,7 @@
 import Vue, { CreateElement, VNode } from 'vue'
 import { State, Mutation, Action, Getter } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
-import '@/style/components/stage.less'
+import '@/style/components/Stage.less'
 
 import { ElementStyle } from '@/type'
 import { Size, Coord, HatElement, EleLocation } from '@/type/editor'
@@ -11,6 +11,7 @@ import { TYPE } from '@/enum/store'
 import ElementsMap from './Elements'
 import Path from './Elements/Path'
 import Draw from '@/components/Elements/Draw'
+import Ruler from '@/components/Panel/Ruler'
 
 import { noop, empty } from '@/util'
 import event from '@/util/event'
@@ -50,25 +51,31 @@ export default class Stage extends Vue {
         ref='stage'
         class='stage'
       >
-        <svg
-          id='stage-svg'
-          version='1.1' baseProfile='full'
-          xmlns='http://www.w3.org/2000/svg'
-          width={this.width}
-          height={this.height}
-          style={this.style}
-          onClick={this.onClick}
-          onDblclick={this.onDblclick}
-          onMousedown={this.onMousedown}
-          onMousemove={this.onMousemove}
-          onMouseup={this.onMouseup}
+        <div
+          ref='stageContain'
+          class='stage-contain'
         >
-          { this.renderElements() }
-          <Path
-            d={this.realPath}
-          />
-        </svg>
-      </div >
+          <svg
+            id='stage-svg'
+            version='1.1' baseProfile='full'
+            xmlns='http://www.w3.org/2000/svg'
+            width={this.width}
+            height={this.height}
+            style={this.style}
+            onClick={this.onClick}
+            onDblclick={this.onDblclick}
+            onMousedown={this.onMousedown}
+            onMousemove={this.onMousemove}
+            onMouseup={this.onMouseup}
+          >
+            { this.renderElements() }
+            <Path
+              d={this.realPath}
+            />
+          </svg>
+        </div>
+        <Ruler />
+      </div>
     )
   }
 
@@ -98,10 +105,11 @@ export default class Stage extends Vue {
 
   @Watch('window', { deep: true })
   onWindowResize () {
-    let { offsetLeft, offsetTop } = this.$refs.stage as HTMLElement
+    let { offsetLeft: left, offsetTop: top } = this.$refs.stage as HTMLElement
+    let { offsetLeft, offsetTop } = this.$refs.stageContain as HTMLElement
     this.changeStage({
-      x: offsetLeft - this.width / 2,
-      y: offsetTop - this.height / 2
+      x: offsetLeft - this.width / 2 + left,
+      y: offsetTop - this.height / 2 + top
     })
   }
 

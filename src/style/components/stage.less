@@ -1,15 +1,21 @@
 @import url(~@/style/base.less);
 
 .stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.stage-contain {
   .position-center(absolute);
 }
 
 #stage-svg,
-.stage {
+.stage-contain {
   overflow: visible;
 }
 
 #stage-svg {
-  float: left;
   .box-shadow;
+
+  float: left;
 }
