@@ -23,22 +23,22 @@ export default class Box extends Vue {
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_PEN)}
         >
-          <Icon type='pen' width='40' height='40' color='red' />
+          <Icon src='/static/icon/pen.svg' width='40' height='40' color='red' />
         </li>
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_LINE)}
         >
-          <Icon type='pen' width='40' height='40' color='red' />
+          <Icon src='/static/icon/pen.svg' width='40' height='40' color='green' />
         </li>
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_CIRCLE)}
         >
-          <Icon type='pen' width='40' height='40' color='red' />
+          <Icon src='/static/icon/pen.svg' width='40' height='40' color='blue' />
         </li>
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_POLY)}
         >
-          <Icon type='pen' width='40' height='40' color='red' />
+          <Icon src='/static/icon/pen.svg' width='40' height='40' />
         </li>
       </ul>
     )

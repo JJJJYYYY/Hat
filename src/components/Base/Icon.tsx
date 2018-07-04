@@ -1,10 +1,14 @@
 import Vue from 'vue'
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch, Provide } from 'vue-property-decorator'
+
+const svgReg = /<svg[^>]+>(.+)<\/svg>/mi
 
 @Component
 export default class Icon extends Vue {
-  @Prop() className?: string
-  @Prop() type?: string
+  @Provide() path: string = ''
+
+  @Prop() src?: string
+  @Prop({ default: '' }) className?: string
   @Prop({ default: 0 }) width!: number
   @Prop({ default: 0 }) height!: number
   @Prop({ default: 'black' }) color!: string
@@ -13,18 +17,40 @@ export default class Icon extends Vue {
     const { path, color, width, height, className } = this
 
     return (
-      <img
-        src={path}
-        class={`icon ${className}`}
+      <svg
+        version='1.1'
+        xmlns='http://www.w3.org/2000/svg'
+        viewBox='0 0 1024 1024'
+        domPropsInnerHTML={path}
+        class={['icon', className]}
         width={width}
         height={height}
-        color={color}
-      />
+        fill={color}
+      >
+      </svg>
     )
   }
 
-  get path () {
-    const type = this.type
-    return type ? `/static/icon/${type}.svg` : ''
+  mounted () {
+    this.fetchIcon()
+  }
+
+  @Watch('src')
+  onType () {
+    this.fetchIcon()
+  }
+
+  fetchIcon () {
+    fetch(this.src)
+      .then((res) => {
+        res.text().then(svg => {
+          this.path = this.getPath(svg)
+        })
+      })
+      .catch(err => console.error(err))
+  }
+
+  getPath (svgStr: string): string {
+    return (svgStr.match(svgReg) || [])[1] || ''
   }
 }
