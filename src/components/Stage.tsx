@@ -29,6 +29,7 @@ function isDraw (model: string) {
 export default class Stage extends Vue {
   @Provide() currDraw?: HatElement
   @Provide() drawPath: number[][] = []
+  @Provide() select?: EleLocation
 
   @Action selectBox!: Function
   @State(state => state.editor.stage.width) width!: number
@@ -46,6 +47,7 @@ export default class Stage extends Vue {
   @Getter private getElementCount!: number
 
   render (): VNode {
+    const { select } = this
     return (
       <div
         ref='stage'
@@ -72,6 +74,9 @@ export default class Stage extends Vue {
             <Path
               d={this.realPath}
             />
+            <Path
+              d={this.selectPath}
+            />
           </svg>
         </div>
         <Ruler />
@@ -94,6 +99,15 @@ export default class Stage extends Vue {
     const draw = this.currDraw ? getDrawMethod(this.currDraw.type) : empty
 
     return oldPath = draw(this.drawPath, oldPath)
+  }
+
+  get selectPath () {
+    const select = this.select
+    let result = ''
+    if (select) {
+      result = `M${this.select!.x} ${this.select!.y}L${this.select!.x} ${this.select!.height}L${this.select!.y} ${this.select!.height}L${this.select!.y} ${this.select!.width}`
+    }
+    return result
   }
 
   get style (): ElementStyle {
@@ -153,6 +167,8 @@ export default class Stage extends Vue {
         default:
           this.createDraw(this.model, [e.offsetX, e.offsetY])
       }
+    } else {
+      this.select = { x: e.offsetX, y: e.offsetY, width: 0, height: 0 }
     }
   }
 
@@ -164,6 +180,11 @@ export default class Stage extends Vue {
           break
         default:
           this.drawPoint([e.offsetX, e.offsetY])
+      }
+    } else {
+      if (this.select) {
+        this.select.width = e.offsetX
+        this.select.height = e.offsetY
       }
     }
   }
@@ -177,6 +198,8 @@ export default class Stage extends Vue {
         default:
           this.drawEnd()
       }
+    } else {
+      this.select = void 0
     }
   }
 

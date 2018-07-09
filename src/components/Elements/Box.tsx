@@ -59,6 +59,7 @@ export default class Box extends Vue {
   @Provide() angle: number = 0
   @Provide() lock = false
 
+  @State(state => state.editor.ratio) ratio!: number
   @State(state => state.editor.multiply) private multiply!: boolean
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @State(state => state.editor.stage) private stage!: Coord
@@ -215,8 +216,8 @@ export default class Box extends Vue {
   }
 
   [MODEL.MOVE] (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
-    this.offset.x = e.pageX - this.stage.x - offset.x
-    this.offset.y = e.pageY - this.stage.y - offset.y
+    this.offset.x = (e.pageX - this.stage.x - offset.x) / this.ratio
+    this.offset.y = (e.pageY - this.stage.y - offset.y) / this.ratio
   }
 
   @stop

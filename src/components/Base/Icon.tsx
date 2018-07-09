@@ -25,18 +25,12 @@ export default class Icon extends Vue {
         class={['icon', className]}
         width={width}
         height={height}
-        fill={color}
       >
       </svg>
     )
   }
 
   mounted () {
-    this.fetchIcon()
-  }
-
-  @Watch('src')
-  onType () {
     this.fetchIcon()
   }
 

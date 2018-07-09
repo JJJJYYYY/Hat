@@ -4,6 +4,7 @@ const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
 const StylelintWebpackPlugin = require('stylelint-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
@@ -77,7 +78,13 @@ module.exports = {
   plugins: [
     new StylelintWebpackPlugin({
       files: ['src/style/**/*.less']
-    })
+    }),
+    // new CopyWebpackPlugin([
+    //   {
+    //     from: path.resolve(__dirname, '../service-worker.js'),
+    //     to: config.build.assetsRoot
+    //   }
+    // ])
   ],
   node: {
     // prevent webpack from injecting useless setImmediate polyfill because Vue

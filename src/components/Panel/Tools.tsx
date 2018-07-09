@@ -16,29 +16,61 @@ export default class Box extends Vue {
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
 
   render (): VNode {
+    const { none, pen, line, circle, poly } = this
+
     return (
       <ul
         class='tools'
       >
         <li
+          onClick={this.onChangeModel.bind(this, MODEL.NONE)}
+        >
+          <Icon
+            className={[ none && 'active' ]}
+            src='/static/icon/mouse.svg'
+            width='30'
+            height='30'
+          />
+        </li>
+        <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_PEN)}
         >
-          <Icon src='/static/icon/pen.svg' width='40' height='40' color='red' />
+          <Icon
+            className={[ pen && 'active' ]}
+            src='/static/icon/pen.svg'
+            width='30'
+            height='30'
+          />
         </li>
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_LINE)}
         >
-          <Icon src='/static/icon/pen.svg' width='40' height='40' color='green' />
+          <Icon
+            className={[ line && 'active' ]}
+            src='/static/icon/ruler.svg'
+            width='30'
+            height='30'
+          />
         </li>
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_CIRCLE)}
         >
-          <Icon src='/static/icon/pen.svg' width='40' height='40' color='blue' />
+          <Icon
+            className={[ circle && 'active' ]}
+            src='/static/icon/circle.svg'
+            width='30'
+            height='30'
+          />
         </li>
         <li
           onClick={this.onChangeModel.bind(this, MODEL.DRAW_POLY)}
         >
-          <Icon src='/static/icon/pen.svg' width='40' height='40' />
+          <Icon
+            className={[ poly && 'active' ]}
+            src='/static/icon/poly.svg'
+            width='30'
+            height='30'
+          />
         </li>
       </ul>
     )
@@ -46,5 +78,25 @@ export default class Box extends Vue {
 
   onChangeModel (model: string) {
     this.changeModel(model === this.model ? MODEL.NONE : model)
+  }
+
+  get none (): boolean {
+    return this.model === MODEL.NONE || this.model === MODEL.MOVE
+  }
+
+  get pen (): boolean {
+    return this.model === MODEL.DRAW_PEN
+  }
+
+  get line (): boolean {
+    return this.model === MODEL.DRAW_LINE
+  }
+
+  get circle (): boolean {
+    return this.model === MODEL.DRAW_CIRCLE
+  }
+
+  get poly (): boolean {
+    return this.model === MODEL.DRAW_POLY
   }
 }
