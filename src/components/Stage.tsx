@@ -3,8 +3,8 @@ import { State, Mutation, Action, Getter } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import '@/style/components/Stage.less'
 
-import { ElementStyle } from '@/type'
-import { Size, Coord, HatElement, EleLocation } from '@/type/editor'
+import { ElementStyle } from '@/types'
+import { Size, Coord, HatElement, EleRect, EleBox } from '@/types/editor'
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
@@ -27,9 +27,9 @@ function isDraw (model: string) {
 
 @Component
 export default class Stage extends Vue {
+  @Provide() select: EleRect | null = null
   @Provide() currDraw?: HatElement
   @Provide() drawPath: number[][] = []
-  @Provide() select?: EleLocation
 
   @Action selectBox!: Function
   @State(state => state.editor.stage.width) width!: number
@@ -45,6 +45,7 @@ export default class Stage extends Vue {
   @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
   @Getter private getElementCount!: number
+  @Action private pressMultiply!: Function
 
   render (): VNode {
     const { select } = this
@@ -75,6 +76,8 @@ export default class Stage extends Vue {
               d={this.realPath}
             />
             <Path
+              className='select-box'
+              color='blue'
               d={this.selectPath}
             />
           </svg>
@@ -85,7 +88,8 @@ export default class Stage extends Vue {
   }
 
   renderElements (): VNode[] {
-    return this.elements.map(this.getElement)
+    const elements = this.elements.map(this.getElement)
+    return elements
   }
 
   getElement (ele: HatElement, i: number) {
@@ -96,16 +100,17 @@ export default class Stage extends Vue {
   }
 
   get realPath () {
-    const draw = this.currDraw ? getDrawMethod(this.currDraw.type) : empty
+    const { currDraw, drawPath } = this
+    const draw = currDraw ? getDrawMethod(currDraw.type) : empty
 
-    return oldPath = draw(this.drawPath, oldPath)
+    return oldPath = draw(drawPath, oldPath)
   }
 
   get selectPath () {
     const select = this.select
     let result = ''
-    if (select) {
-      result = `M${this.select!.x} ${this.select!.y}L${this.select!.x} ${this.select!.height}L${this.select!.y} ${this.select!.height}L${this.select!.y} ${this.select!.width}`
+    if (select && select.x1 && select.y2) {
+      result = `M${select.x1} ${select.y1}L${select.x1} ${select.y2}L${select.x2} ${select.y2}L${select.x2} ${select.y1}Z`
     }
     return result
   }
@@ -168,11 +173,11 @@ export default class Stage extends Vue {
           this.createDraw(this.model, [e.offsetX, e.offsetY])
       }
     } else {
-      this.select = { x: e.offsetX, y: e.offsetY, width: 0, height: 0 }
+      this.select = { x1: e.offsetX, y1: e.offsetY, x2: 0, y2: 0 }
+      this.pressMultiply(true)
     }
   }
 
-  @self
   onMousemove (e: MouseEvent) {
     if (isDraw(this.model)) {
       switch (this.model) {
@@ -183,8 +188,9 @@ export default class Stage extends Vue {
       }
     } else {
       if (this.select) {
-        this.select.width = e.offsetX
-        this.select.height = e.offsetY
+        this.select.x2 = e.offsetX
+        this.select.y2 = e.offsetY
+        this.selectElement(this.select, this.elements)
       }
     }
   }
@@ -199,7 +205,8 @@ export default class Stage extends Vue {
           this.drawEnd()
       }
     } else {
-      this.select = void 0
+      this.select = null
+      this.pressMultiply(false)
     }
   }
 
@@ -235,6 +242,15 @@ export default class Stage extends Vue {
       this.currDraw = void 0
       this.drawPath = []
     }
+  }
+
+  selectElement ({ x1, y1, x2, y2 }: EleRect, elements: HatElement[]) {
+    this.$children.forEach(ele => { // has questions
+      ele = ele.$children[0]
+      if (ele) {
+        this.selectBox(ele)
+      }
+    })
   }
 
   onResizeWindow () {

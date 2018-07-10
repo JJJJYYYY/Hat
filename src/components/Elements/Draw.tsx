@@ -2,8 +2,7 @@ import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 
-import { HatElement, Coord, EleChangeStage, EleLocation } from '@/type/editor'
-
+import { HatElement, Coord, EleChangeStage, EleLocation } from '@/types/editor'
 import { copyElement, noop } from '@/util'
 import getDrawMethod from '@/util/draw'
 import { TYPE } from '@/enum/store'

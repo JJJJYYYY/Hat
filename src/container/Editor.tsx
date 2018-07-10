@@ -12,9 +12,8 @@ import Tools from '@/components/Panel/Tools'
 
 import event from '@/util/event'
 
-import { ElementStyle } from '@/type'
-import { Size, Coord, EleBox } from '@/type/editor'
-
+import { ElementStyle } from '@/types'
+import { Size, Coord, EleBox } from '@/types/editor'
 @Component
 export default class Editor extends Vue {
   startPoint?: Coord

@@ -4,9 +4,8 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Size, HatElement, Coord, EleBox, EleLocation } from '@/type/editor'
-
-let boxes: EleBox[] = []
+import { Size, HatElement, Coord, EleBox, EleLocation } from '@/types/editor'
+let boxes: Set<EleBox> = new Set()
 
 interface EditorState {
   window: Size,
@@ -15,7 +14,7 @@ interface EditorState {
   model: string,
   notActiveModel: string,
   ratio: number,
-  boxIds: number[],
+  boxIds: Set<number>,
   elements: HatElement[],
   currEle?: HatElement
 }
@@ -36,13 +35,13 @@ const editor: Module<EditorState, any> = {
     model: MODEL.NONE,
     notActiveModel: MODEL.NONE,
     ratio: 1,
-    boxIds: [],
+    boxIds: new Set(),
     elements: [],
     currEle: undefined
   },
   getters: {
     selectedBoxes (state): EleBox[] {
-      return state.boxIds && boxes
+      return [...(state.boxIds && boxes)]
     },
     getElementCount (state): number {
       return state.elements.length
@@ -79,22 +78,25 @@ const editor: Module<EditorState, any> = {
       state.stage.y = y
     },
     [MODEL.MULTIPLY] (state: EditorState, box: EleBox) {
-      if (!state.boxIds.includes(box.boxId)) {
-        boxes.push(box)
-        state.boxIds.push(box.boxId)
+      if (!state.boxIds.has(box.boxId)) {
+        boxes.add(box)
+        state.boxIds.add(box.boxId)
       }
     },
     [MODEL.SELECT] (state: EditorState, box: EleBox) {
-      boxes = [box]
-      state.boxIds = [box.boxId]
+      boxes.clear()
+      boxes.add(box)
+
+      state.boxIds.clear()
+      state.boxIds.add(box.boxId)
     },
     [MODEL.CANCEL] (state: EditorState, box: EleBox) {
-      boxes = boxes.filter(select => select !== box)
-      state.boxIds = boxes.map(select => select.boxId)
+      boxes.clear()
+      state.boxIds.clear()
     },
     [MODEL.CLEAR] (state: EditorState) {
-      boxes = []
-      state.boxIds = []
+      boxes.clear()
+      state.boxIds.clear()
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: HatElement) {
       state.elements.push(ele)
@@ -107,7 +109,7 @@ const editor: Module<EditorState, any> = {
     selectBox ({ commit, state }, box?: EleBox) {
       if (box) {
         if (box.boxId) {
-          if (state.multiply && state.boxIds.includes(box.boxId)) {
+          if (state.multiply && state.boxIds.has(box.boxId)) {
             commit(MODEL.CANCEL, box)
           } else {
             commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, box)
@@ -116,6 +118,7 @@ const editor: Module<EditorState, any> = {
       } else {
         commit(MODEL.CLEAR)
       }
+      console.log(box)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)

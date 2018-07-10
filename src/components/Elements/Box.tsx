@@ -5,8 +5,8 @@ import '@/style/elements/box.less'
 
 import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
-import { ElementStyle } from '@/type'
-import { Coord, EleBox } from '@/type/editor'
+import { ElementStyle } from '@/types'
+import { Coord, EleBox } from '@/types/editor'
 
 import { noop } from '@/util'
 import event from '@/util/event'

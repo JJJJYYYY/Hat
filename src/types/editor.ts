@@ -42,6 +42,13 @@ export interface EleBox extends Vue {
   [MODEL.ROTATE]: Function
 }
 
+export interface EleRect {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
 export interface EleChangeStage {
   offsetX: number
   offsetY: number

@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import { State } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
-import { Size, Coord } from '@/type/editor'
+import { Size, Coord } from '@/types/editor'
 import '@/style/components/ruler.less'
 
 interface NumAndStep {
