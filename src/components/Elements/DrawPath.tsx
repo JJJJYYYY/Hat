@@ -2,8 +2,8 @@ import Vue from 'vue'
 import { Component, Prop } from 'vue-property-decorator'
 
 @Component
-export default class Path extends Vue {
-  name = 'Path'
+export default class DrawPath extends Vue {
+  name = 'DrawPath'
 
   @Prop() d!: string
   @Prop() className!: string

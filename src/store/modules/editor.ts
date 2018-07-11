@@ -5,7 +5,7 @@ import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
 import { Size, HatElement, Coord, EleBox, EleLocation } from '@/types/editor'
-let boxes: Set<EleBox> = new Set()
+const boxes: Set<EleBox> = new Set()
 
 interface EditorState {
   window: Size,
@@ -118,7 +118,6 @@ const editor: Module<EditorState, any> = {
       } else {
         commit(MODEL.CLEAR)
       }
-      console.log(box)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)

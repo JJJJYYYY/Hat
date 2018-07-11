@@ -9,7 +9,7 @@ import { MODEL } from '@/enum/editor'
 import { TYPE } from '@/enum/store'
 
 import ElementsMap from './Elements'
-import Path from './Elements/Path'
+import DrawPath from './Elements/DrawPath'
 import Draw from '@/components/Elements/Draw'
 import Ruler from '@/components/Panel/Ruler'
 
@@ -72,10 +72,10 @@ export default class Stage extends Vue {
             onMouseup={this.onMouseup}
           >
             { this.renderElements() }
-            <Path
+            <DrawPath
               d={this.realPath}
             />
-            <Path
+            <DrawPath
               className='select-box'
               color='blue'
               d={this.selectPath}
@@ -178,6 +178,7 @@ export default class Stage extends Vue {
     }
   }
 
+  @self
   onMousemove (e: MouseEvent) {
     if (isDraw(this.model)) {
       switch (this.model) {

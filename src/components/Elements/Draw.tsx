@@ -8,7 +8,7 @@ import getDrawMethod from '@/util/draw'
 import { TYPE } from '@/enum/store'
 
 import Box from './Box'
-import Path from './Path'
+import DrawPath from './DrawPath'
 import { MODEL } from '@/enum/editor'
 
 @Component
@@ -40,7 +40,7 @@ export default class DrawPen extends Vue {
         rotate={rotate}
         scaling={this.scaling}
         onChange={this.commitState}>
-        <Path
+        <DrawPath
           d={this.d}
         />
       </Box>

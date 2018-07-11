@@ -59,9 +59,9 @@ export default class Box extends Vue {
   @Provide() angle: number = 0
   @Provide() lock = false
 
-  @State(state => state.editor.ratio) ratio!: number
+  @State(state => state.editor.ratio) private ratio!: number
   @State(state => state.editor.multiply) private multiply!: boolean
-  @State(state => state.editor.boxIds) private boxIds!: number[]
+  @State(state => state.editor.boxIds) private boxIds!: Set<number>
   @State(state => state.editor.stage) private stage!: Coord
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
@@ -128,7 +128,7 @@ export default class Box extends Vue {
   }
 
   get selected (): boolean {
-    return this.boxIds.includes(this.boxId)
+    return this.boxIds.has(this.boxId)
   }
 
   get boxBorder (): string {
@@ -136,7 +136,7 @@ export default class Box extends Vue {
   }
 
   get isSingle (): boolean {
-    return this.selected && this.boxIds.length === 1
+    return this.selected && this.boxIds.size === 1
   }
 
   get centerPoint (): Coord {
@@ -197,7 +197,7 @@ export default class Box extends Vue {
 
   onMousedown () {
     let selected = this.selected
-    selectNum = this.boxIds.length
+    selectNum = this.boxIds.size
     if ((selectNum < 2 && !selected) || this.multiply) this.select(this)
     // mouse on a selected box maybe will move,
     // else it is not impossible
@@ -208,7 +208,7 @@ export default class Box extends Vue {
   onMouseup (e: MouseEvent) {
     if (
       selectNum > 1 &&
-      this.boxIds.length === selectNum && // prevent repeat call `selectBox`
+      this.boxIds.size === selectNum && // prevent repeat call `selectBox`
       Date.now() - clickTime < 300 // simulate click
     ) {
       this.select(this)
