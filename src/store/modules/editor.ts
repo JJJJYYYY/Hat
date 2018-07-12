@@ -5,7 +5,8 @@ import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
 import { Size, HatElement, Coord, EleBox, EleLocation } from '@/types/editor'
-const boxes: Set<EleBox> = new Set()
+
+let boxes: EleBox[] = []
 
 interface EditorState {
   window: Size,
@@ -14,7 +15,7 @@ interface EditorState {
   model: string,
   notActiveModel: string,
   ratio: number,
-  boxIds: Set<number>,
+  boxIds: number[],
   elements: HatElement[],
   currEle?: HatElement
 }
@@ -35,13 +36,13 @@ const editor: Module<EditorState, any> = {
     model: MODEL.NONE,
     notActiveModel: MODEL.NONE,
     ratio: 1,
-    boxIds: new Set(),
+    boxIds: [],
     elements: [],
     currEle: undefined
   },
   getters: {
     selectedBoxes (state): EleBox[] {
-      return [...(state.boxIds && boxes)]
+      return state.boxIds && boxes
     },
     getElementCount (state): number {
       return state.elements.length
@@ -50,7 +51,6 @@ const editor: Module<EditorState, any> = {
   mutations: {
     // model: move, resize, select, multiply, null=''
     [TYPE.CHANGE_MODEL] (state: EditorState, model: string) {
-      console.log('currModel: ', model)
       state.model = model
     },
     [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, context }) {
@@ -78,25 +78,22 @@ const editor: Module<EditorState, any> = {
       state.stage.y = y
     },
     [MODEL.MULTIPLY] (state: EditorState, box: EleBox) {
-      if (!state.boxIds.has(box.boxId)) {
-        boxes.add(box)
-        state.boxIds.add(box.boxId)
+      if (!state.boxIds.includes(box.boxId)) {
+        boxes.push(box)
+        state.boxIds.push(box.boxId)
       }
     },
     [MODEL.SELECT] (state: EditorState, box: EleBox) {
-      boxes.clear()
-      boxes.add(box)
-
-      state.boxIds.clear()
-      state.boxIds.add(box.boxId)
+      boxes = [box]
+      state.boxIds = [box.boxId]
     },
     [MODEL.CANCEL] (state: EditorState, box: EleBox) {
-      boxes.clear()
-      state.boxIds.clear()
+      boxes = boxes.filter(select => select !== box)
+      state.boxIds = boxes.map(select => select.boxId)
     },
     [MODEL.CLEAR] (state: EditorState) {
-      boxes.clear()
-      state.boxIds.clear()
+      boxes = []
+      state.boxIds = []
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: HatElement) {
       state.elements.push(ele)
@@ -109,7 +106,7 @@ const editor: Module<EditorState, any> = {
     selectBox ({ commit, state }, box?: EleBox) {
       if (box) {
         if (box.boxId) {
-          if (state.multiply && state.boxIds.has(box.boxId)) {
+          if (state.multiply && state.boxIds.includes(box.boxId)) {
             commit(MODEL.CANCEL, box)
           } else {
             commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, box)

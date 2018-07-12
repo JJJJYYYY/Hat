@@ -61,7 +61,7 @@ export default class Box extends Vue {
 
   @State(state => state.editor.ratio) private ratio!: number
   @State(state => state.editor.multiply) private multiply!: boolean
-  @State(state => state.editor.boxIds) private boxIds!: Set<number>
+  @State(state => state.editor.boxIds) private boxIds!: number[]
   @State(state => state.editor.stage) private stage!: Coord
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
@@ -90,21 +90,6 @@ export default class Box extends Vue {
         onMouseup={this.onMouseup}
         transform={this.transform}
         >
-        <circle
-          class='rotate-point'
-          vector-effect='non-scaling-stroke'
-          v-show={this.selected}
-          r={ROTATE_POINT_R}
-          cx={this.rotatePoint.x}
-          cy={this.rotatePoint.y}
-          onMousedown={this.onRotateStart}
-        ></circle>
-        <line
-          x1={this.rotatePoint.x}
-          y1={this.rotatePoint.y}
-          x2={this.rotatePoint.x}
-          y2={this.y}
-        ></line>
         <g
           transform={this.translate}
         >
@@ -119,8 +104,22 @@ export default class Box extends Vue {
           { this.$slots.default }
         </g>
         <g
-          v-show={this.isSingle}
-          >
+          v-show={this.selected && this.isSingle}
+        >
+          <circle
+            class='rotate-point'
+            vector-effect='non-scaling-stroke'
+            r={ROTATE_POINT_R}
+            cx={this.rotatePoint.x}
+            cy={this.rotatePoint.y}
+            onMousedown={this.onRotateStart}
+          ></circle>
+          <line
+            x1={this.rotatePoint.x}
+            y1={this.rotatePoint.y}
+            x2={this.rotatePoint.x}
+            y2={this.y}
+          ></line>
           { scalePoints }
         </g>
       </g>
@@ -128,7 +127,7 @@ export default class Box extends Vue {
   }
 
   get selected (): boolean {
-    return this.boxIds.has(this.boxId)
+    return this.boxIds.includes(this.boxId)
   }
 
   get boxBorder (): string {
@@ -136,7 +135,7 @@ export default class Box extends Vue {
   }
 
   get isSingle (): boolean {
-    return this.selected && this.boxIds.size === 1
+    return this.selected && this.boxIds.length === 1
   }
 
   get centerPoint (): Coord {
@@ -197,7 +196,7 @@ export default class Box extends Vue {
 
   onMousedown () {
     let selected = this.selected
-    selectNum = this.boxIds.size
+    selectNum = this.boxIds.length
     if ((selectNum < 2 && !selected) || this.multiply) this.select(this)
     // mouse on a selected box maybe will move,
     // else it is not impossible
@@ -208,7 +207,7 @@ export default class Box extends Vue {
   onMouseup (e: MouseEvent) {
     if (
       selectNum > 1 &&
-      this.boxIds.size === selectNum && // prevent repeat call `selectBox`
+      this.boxIds.length === selectNum && // prevent repeat call `selectBox`
       Date.now() - clickTime < 300 // simulate click
     ) {
       this.select(this)

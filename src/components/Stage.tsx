@@ -18,6 +18,8 @@ import event from '@/util/event'
 import getDrawMethod from '@/util/draw'
 import { self, once, ctrl, prevent } from '@/util/decorator'
 
+let clickTime = 0
+
 let oldPath = ''
 
 const DrawModel = [ MODEL.DRAW_LINE, MODEL.DRAW_PEN, MODEL.DRAW_CIRCLE, MODEL.DRAW_POLY ]
@@ -38,11 +40,11 @@ export default class Stage extends Vue {
   @State(state => state.editor.ratio) ratio!: number
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.elements) elements!: HatElement[]
-  @State(state => state.editor.notActiveModel) notActiveModel!: string
+  @State(state => state.editor.boxIds) private boxIds!: number[]
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.SCALE_RADIO) private scaleRatio!: Function
-  @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
+  @Mutation(MODEL.CANCEL) private cancelSelect!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
   @Getter private getElementCount!: number
   @Action private pressMultiply!: Function
@@ -65,7 +67,6 @@ export default class Stage extends Vue {
             width={this.width}
             height={this.height}
             style={this.style}
-            onClick={this.onClick}
             onDblclick={this.onDblclick}
             onMousedown={this.onMousedown}
             onMousemove={this.onMousemove}
@@ -146,11 +147,6 @@ export default class Stage extends Vue {
   }
 
   @self
-  onClick () {
-    this.selectBox()
-  }
-
-  @self
   onDblclick () {
     switch (this.model) {
       case MODEL.DRAW_POLY:
@@ -162,6 +158,7 @@ export default class Stage extends Vue {
 
   @self
   onMousedown (e: MouseEvent) {
+    clickTime = Date.now()
     if (isDraw(this.model)) {
       switch (this.model) {
         case MODEL.DRAW_POLY:
@@ -178,7 +175,6 @@ export default class Stage extends Vue {
     }
   }
 
-  @self
   onMousemove (e: MouseEvent) {
     if (isDraw(this.model)) {
       switch (this.model) {
@@ -208,6 +204,9 @@ export default class Stage extends Vue {
     } else {
       this.select = null
       this.pressMultiply(false)
+    }
+    if (Date.now() - clickTime < 300) {
+      this.selectBox()
     }
   }
 
@@ -245,11 +244,22 @@ export default class Stage extends Vue {
     }
   }
 
-  selectElement ({ x1, y1, x2, y2 }: EleRect, elements: HatElement[]) {
-    this.$children.forEach(ele => { // has questions
-      ele = ele.$children[0]
-      if (ele) {
-        this.selectBox(ele)
+  selectElement (range: EleRect, elements: HatElement[]) {
+    this.$children.forEach(ele => {
+      const box = ele.$children[0] as EleBox
+      if (!box || !box.boxId) return
+      const selected = this.boxIds.includes(box.boxId)
+      const inRange = this.inRange(range, box)
+      if (
+        !selected &&
+        inRange
+      ) {
+        this.selectBox(box)
+      } else if (
+        selected &&
+        !inRange
+      ) {
+        this.cancelSelect(box)
       }
     })
   }
@@ -269,5 +279,25 @@ export default class Stage extends Vue {
       : Math.max(this.ratio - 0.01, 0.05)
 
     this.scaleRatio(ratio)
+  }
+
+  inRange ({ x1, y1, x2, y2 }: EleRect, ele: EleBox): boolean {
+    if (x1 > x2) {
+      const a = x1
+      x1 = x2
+      x2 = a
+    }
+    if (y1 > y2) {
+      const a = y1
+      y1 = y2
+      y2 = a
+    }
+    // TODO: add different dir return different result
+    return (
+      x1 <= ele.x &&
+      x2 >= ele.x + ele.width &&
+      y1 <= ele.y &&
+      y2 >= ele.y + ele.height
+    )
   }
 }

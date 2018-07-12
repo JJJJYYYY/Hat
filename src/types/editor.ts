@@ -34,7 +34,7 @@ export interface EleLocation extends Coord, Size {
   i?: number // index
 }
 
-export interface EleBox extends Vue {
+export interface EleBox extends Vue, EleLocation {
   boxId: number
   commit: Function
   [MODEL.SCALE]: Function
