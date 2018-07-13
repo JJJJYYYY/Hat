@@ -13,8 +13,8 @@ import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 import { stop } from '@/util/decorator'
 
-const { min: ELE_MIN } = EditorConfig.element.size
-const PADDING = 20
+// const { min: ELE_MIN } = EditorConfig.element.size
+// const PADDING = 20
 const ROTATE_POINT_TOP = 20
 const ROTATE_POINT_R = 6
 
@@ -59,13 +59,13 @@ export default class Box extends Vue {
   @Provide() angle: number = 0
   @Provide() lock = false
 
+  @State(state => state.editor.model) private model!: string
   @State(state => state.editor.ratio) private ratio!: number
   @State(state => state.editor.multiply) private multiply!: boolean
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @State(state => state.editor.stage) private stage!: Coord
-  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
-  @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
-  @Action('selectBox') private select!: Function
+  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: (model: string) => void
+  @Action('selectBox') private select!: (ele: EleBox) => void
 
   render (): VNode {
     const scalePoints = this.points.map((p, i) => {
@@ -86,10 +86,11 @@ export default class Box extends Vue {
     return (
       <g
         stroke={this.boxBorder}
+        onDblclick={this.selectThis}
         onMousedown={this.onMousedown}
         onMouseup={this.onMouseup}
         transform={this.transform}
-        >
+      >
         <g
           transform={this.translate}
         >
@@ -176,7 +177,11 @@ export default class Box extends Vue {
   }
 
   get translate (): string { // Q: why is work?
-    return `translate(${this.x},${this.y}) scale(${this.scale.x},${this.scale.y}) translate(${-this.x},${-this.y})`
+    return (
+      `translate(${this.x},${this.y}) ` +
+      `scale(${this.scale.x},${this.scale.y}) ` +
+      `translate(${-this.x},${-this.y})`
+    )
   }
 
   get rotatePoint (): Coord {
@@ -191,21 +196,36 @@ export default class Box extends Vue {
   }
 
   get transform (): string {
-    return `translate(${this.offset.x},${this.offset.y}) rotate(${this.rotateAngle} ${this.centerPoint.x} ${this.centerPoint.y})`
+    return (
+      `translate(${this.offset.x},${this.offset.y}) ` +
+      `rotate(${this.rotateAngle} ${this.centerPoint.x} ${this.centerPoint.y})`
+    )
+  }
+
+  get isModelNone () {
+    return this.model === MODEL.NONE
   }
 
   onMousedown () {
-    let selected = this.selected
-    selectNum = this.boxIds.length
-    if ((selectNum < 2 && !selected) || this.multiply) this.select(this)
-    // mouse on a selected box maybe will move,
-    // else it is not impossible
-    if (selected || this.isSingle) this.changeModel(MODEL.MOVE)
-    clickTime = Date.now()
+    if (this.isModelNone) {
+      let selected = this.selected
+      selectNum = this.boxIds.length
+      if (
+        (selectNum < 2 && !selected) ||
+        this.multiply
+      ) {
+        this.select(this)
+      }
+      // mouse on a selected box maybe will move,
+      // else it is not impossible
+      if (selected || this.isSingle) this.changeModel(MODEL.MOVE)
+      clickTime = Date.now()
+    }
   }
 
-  onMouseup (e: MouseEvent) {
+  onMouseup () {
     if (
+      this.isModelNone &&
       selectNum > 1 &&
       this.boxIds.length === selectNum && // prevent repeat call `selectBox`
       Date.now() - clickTime < 300 // simulate click
@@ -225,27 +245,28 @@ export default class Box extends Vue {
     this.changeModel(MODEL.SCALE)
   }
 
-  [MODEL.SCALE] (e: MouseEvent, startPoint: Coord) {
-    if (this.scaling) {
-      if (!this.scaling(this.dir, this.scale, this.offset)) return
+  [MODEL.SCALE] (e: MouseEvent) {
+    const { scaling, dir, scale, offset, stage, x, y, width, height } = this
+    if (scaling) {
+      if (!scaling(dir, scale, offset)) return
     }
-    this.dir.split('-').forEach(l => {
+    dir.split('-').forEach(l => {
       switch (l) {
         case DIR.LEFT:
-          let diffX = this.stage.x + this.x - e.pageX
-          this.scale.x = diffX / this.width + 1
-          this.offset.x = -diffX
+          let diffX = stage.x + x - e.pageX
+          scale.x = diffX / width + 1
+          offset.x = -diffX
           break
         case DIR.TOP:
-          let diffY = this.stage.y + this.y - e.pageY
-          this.scale.y = diffY / this.height + 1
-          this.offset.y = -diffY
+          let diffY = stage.y + y - e.pageY
+          scale.y = diffY / height + 1
+          offset.y = -diffY
           break
         case DIR.RIGHT:
-          this.scale.x = (e.pageX - this.stage.x - this.x) / this.width
+          scale.x = (e.pageX - stage.x - x) / width
           break
         case DIR.BOTTOM:
-          this.scale.y = (e.pageY - this.stage.y - this.y) / this.height
+          scale.y = (e.pageY - stage.y - y) / height
           break
       }
     })
@@ -260,6 +281,10 @@ export default class Box extends Vue {
     const { x, y } = this.centerPoint
     const { offsetX: x1, offsetY: y1 } = e // todo：(y1 - y) / (x1 - x)
     this.angle = Math.atan2(x1 - x, y - y1) / Math.PI * 180 - this.rotate
+  }
+
+  selectThis () {
+    this.select(this)
   }
 
   commit () {

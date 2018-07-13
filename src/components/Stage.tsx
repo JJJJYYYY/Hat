@@ -42,11 +42,11 @@ export default class Stage extends Vue {
   @State(state => state.editor.elements) elements!: HatElement[]
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
-  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
+  // @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.SCALE_RADIO) private scaleRatio!: Function
   @Mutation(MODEL.CANCEL) private cancelSelect!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
-  @Getter private getElementCount!: number
+  // @Getter private getElementCount!: number
   @Action private pressMultiply!: Function
 
   render (): VNode {
@@ -156,7 +156,6 @@ export default class Stage extends Vue {
     }
   }
 
-  @self
   onMousedown (e: MouseEvent) {
     clickTime = Date.now()
     if (isDraw(this.model)) {
@@ -179,6 +178,7 @@ export default class Stage extends Vue {
     if (isDraw(this.model)) {
       switch (this.model) {
         case MODEL.DRAW_POLY:
+          this.replacePoint([e.offsetX, e.offsetY])
           break
         default:
           this.drawPoint([e.offsetX, e.offsetY])
@@ -205,9 +205,9 @@ export default class Stage extends Vue {
       this.select = null
       this.pressMultiply(false)
     }
-    if (Date.now() - clickTime < 300) {
-      this.selectBox()
-    }
+    // if (Date.now() - clickTime < 300) {
+    //   this.selectBox()
+    // }
   }
 
   createDraw (type: string, point: number[]) {
@@ -223,6 +223,15 @@ export default class Stage extends Vue {
       }
     }
     this.drawPoint(point)
+  }
+
+  replacePoint (point: number[]) {
+    const { currDraw, drawPath } = this
+    const len = drawPath.length
+    if (currDraw && len) {
+      drawPath.pop()
+      drawPath.push(point)
+    }
   }
 
   drawPoint (point: number[]) {
