@@ -76,10 +76,22 @@ export default class Stage extends Vue {
             <DrawPath
               d={this.realPath}
             />
+          </svg>
+          <svg
+            id='draw-stage-svg'
+            version='1.1' baseProfile='full'
+            xmlns='http://www.w3.org/2000/svg'
+            width={this.width}
+            height={this.height}
+            style={this.baseStyle}
+            onDblclick={this.onDblclick}
+            onMousedown={this.onMousedown}
+            onMousemove={this.onMousemove}
+            onMouseup={this.onMouseup}
+            v-show={!this.isModelNode} // TODO: model is MODEL.MOVE?
+          >
             <DrawPath
-              className='select-box'
-              color='blue'
-              d={this.selectPath}
+              d={this.realPath}
             />
           </svg>
         </div>
@@ -100,6 +112,10 @@ export default class Stage extends Vue {
       : null
   }
 
+  get isModelNode () {
+    return this.model === MODEL.NONE
+  }
+
   get realPath () {
     const { currDraw, drawPath } = this
     const draw = currDraw ? getDrawMethod(currDraw.type) : empty
@@ -108,18 +124,28 @@ export default class Stage extends Vue {
   }
 
   get selectPath () {
-    const select = this.select
+    const { select, isModelNode } = this
     let result = ''
-    if (select && select.x1 && select.y2) {
-      result = `M${select.x1} ${select.y1}L${select.x1} ${select.y2}L${select.x2} ${select.y2}L${select.x2} ${select.y1}Z`
+    if (isModelNode && select && select.x1 && select.y2) {
+      result =
+        `M${select.x1} ${select.y1}` +
+        `L${select.x1} ${select.y2}` +
+        `L${select.x2} ${select.y2}` +
+        `L${select.x2} ${select.y1}Z`
     }
     return result
+  }
+
+  get baseStyle (): ElementStyle {
+    return {
+      transform: `scale(${this.ratio})`
+    }
   }
 
   get style (): ElementStyle {
     return {
       background: `${'#fff'}`,
-      transform: `scale(${this.ratio})`
+      ...this.baseStyle
     }
   }
 
@@ -205,9 +231,12 @@ export default class Stage extends Vue {
       this.select = null
       this.pressMultiply(false)
     }
-    // if (Date.now() - clickTime < 300) {
-    //   this.selectBox()
-    // }
+    if (
+      e.target === e.currentTarget &&
+      Date.now() - clickTime < 300
+    ) {
+      this.selectBox()
+    }
   }
 
   createDraw (type: string, point: number[]) {
@@ -256,7 +285,7 @@ export default class Stage extends Vue {
   selectElement (range: EleRect, elements: HatElement[]) {
     this.$children.forEach(ele => {
       const box = ele.$children[0] as EleBox
-      if (!box || !box.boxId) return
+      if (this.model !== MODEL.NONE || !box || !box.boxId) return
       const selected = this.boxIds.includes(box.boxId)
       const inRange = this.inRange(range, box)
       if (

@@ -207,25 +207,22 @@ export default class Box extends Vue {
   }
 
   onMousedown () {
-    if (this.isModelNone) {
-      let selected = this.selected
-      selectNum = this.boxIds.length
-      if (
-        (selectNum < 2 && !selected) ||
-        this.multiply
-      ) {
-        this.select(this)
-      }
-      // mouse on a selected box maybe will move,
-      // else it is not impossible
-      if (selected || this.isSingle) this.changeModel(MODEL.MOVE)
-      clickTime = Date.now()
+    let selected = this.selected
+    selectNum = this.boxIds.length
+    if (
+      (selectNum < 2 && !selected) ||
+      this.multiply
+    ) {
+      this.select(this)
     }
+    // mouse on a selected box maybe will move,
+    // else it is not impossible
+    if (selected || this.isSingle) this.changeModel(MODEL.MOVE)
+    clickTime = Date.now()
   }
 
   onMouseup () {
     if (
-      this.isModelNone &&
       selectNum > 1 &&
       this.boxIds.length === selectNum && // prevent repeat call `selectBox`
       Date.now() - clickTime < 300 // simulate click
