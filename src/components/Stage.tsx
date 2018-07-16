@@ -50,7 +50,16 @@ export default class Stage extends Vue {
   @Action private pressMultiply!: Function
 
   render (): VNode {
-    const { select } = this
+    const {
+      isDrawing,
+      baseStyle,
+      style,
+      selectPath,
+      realPath,
+      renderStage,
+      renderElements
+    } = this
+
     return (
       <div
         ref='stage'
@@ -60,40 +69,33 @@ export default class Stage extends Vue {
           ref='stageContain'
           class='stage-contain'
         >
-          <svg
-            id='stage-svg'
-            version='1.1' baseProfile='full'
-            xmlns='http://www.w3.org/2000/svg'
-            width={this.width}
-            height={this.height}
-            style={this.style}
-            onDblclick={this.onDblclick}
-            onMousedown={this.onMousedown}
-            onMousemove={this.onMousemove}
-            onMouseup={this.onMouseup}
-          >
-            { this.renderElements() }
-            <DrawPath
-              d={this.realPath}
-            />
-          </svg>
-          <svg
-            id='draw-stage-svg'
-            version='1.1' baseProfile='full'
-            xmlns='http://www.w3.org/2000/svg'
-            width={this.width}
-            height={this.height}
-            style={this.baseStyle}
-            onDblclick={this.onDblclick}
-            onMousedown={this.onMousedown}
-            onMousemove={this.onMousemove}
-            onMouseup={this.onMouseup}
-            v-show={!this.isModelNode} // TODO: model is MODEL.MOVE?
-          >
-            <DrawPath
-              d={this.realPath}
-            />
-          </svg>
+          {
+            [
+              renderStage(
+                'stage-svg',
+                style,
+                true,
+                [
+                  renderElements(),
+                  <DrawPath
+                    className='select-box'
+                    color='blue'
+                    d={selectPath}
+                  />
+                ]
+              ),
+              renderStage(
+                'draw-stage-svg',
+                baseStyle,
+                isDrawing,
+                [
+                  <DrawPath
+                    d={realPath}
+                  />
+                ]
+              )
+            ]
+          }
         </div>
         <Ruler />
       </div>
@@ -112,8 +114,43 @@ export default class Stage extends Vue {
       : null
   }
 
+  renderStage (id: string, style: ElementStyle, show: boolean, children: Vue[]) {
+    const {
+      width,
+      height,
+      isDrawing,
+      onDblclick,
+      onMousedown,
+      onMousemove,
+      onMouseup,
+      realPath
+    } = this
+
+    return (
+      <svg
+        id={id}
+        version='1.1' baseProfile='full'
+        xmlns='http://www.w3.org/2000/svg'
+        width={width}
+        height={height}
+        style={style}
+        onDblclick={onDblclick}
+        onMousedown={onMousedown}
+        onMousemove={onMousemove}
+        onMouseup={onMouseup}
+        v-show={show}
+      >
+        { children }
+      </svg>
+    )
+  }
+
   get isModelNode () {
     return this.model === MODEL.NONE
+  }
+
+  get isDrawing () {
+    return this.model !== MODEL.NONE && this.model !== MODEL.MOVE
   }
 
   get realPath () {
