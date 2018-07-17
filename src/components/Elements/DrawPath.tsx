@@ -7,17 +7,19 @@ export default class DrawPath extends Vue {
 
   @Prop() d!: string
   @Prop() className!: string
+  @Prop({ default: 1 }) width!: string
   @Prop({ default: '#000' }) color!: string
 
   render () {
-    const { d, color, className, edit } = this
+    const { d, color, className, edit, width } = this
 
     return (
       <path
         d={d}
         class={[className]}
         stroke={color}
-        onDblclick={edit}
+        stroke-width={width}
+        onClick={edit}
         vector-effect='non-scaling-stroke'
         fill='none'>
       </path>
@@ -25,6 +27,6 @@ export default class DrawPath extends Vue {
   }
 
   edit () {
-    console.log('edit')
+    // console.log('edit')
   }
 }

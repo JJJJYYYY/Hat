@@ -15,7 +15,7 @@ import Ruler from '@/components/Panel/Ruler'
 
 import { noop, empty } from '@/util'
 import event from '@/util/event'
-import getDrawMethod from '@/util/draw'
+import getDrawMethod, { getRectPath } from '@/util/draw'
 import { self, once, ctrl, prevent } from '@/util/decorator'
 
 let clickTime = 0
@@ -42,7 +42,7 @@ export default class Stage extends Vue {
   @State(state => state.editor.elements) elements!: HatElement[]
   @State(state => state.editor.boxIds) private boxIds!: number[]
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
-  // @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
+  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.SCALE_RADIO) private scaleRatio!: Function
   @Mutation(MODEL.CANCEL) private cancelSelect!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
@@ -90,6 +90,7 @@ export default class Stage extends Vue {
                 isDrawing,
                 [
                   <DrawPath
+                    width='5'
                     d={realPath}
                   />
                 ]
@@ -164,11 +165,7 @@ export default class Stage extends Vue {
     const { select, isModelNode } = this
     let result = ''
     if (isModelNode && select && select.x1 && select.y2) {
-      result =
-        `M${select.x1} ${select.y1}` +
-        `L${select.x1} ${select.y2}` +
-        `L${select.x2} ${select.y2}` +
-        `L${select.x2} ${select.y1}Z`
+      result = getRectPath(select)
     }
     return result
   }
@@ -216,6 +213,7 @@ export default class Stage extends Vue {
         this.drawEnd()
         break
       default:
+        this.changeModel(MODEL.NONE)
     }
   }
 

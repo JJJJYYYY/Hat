@@ -115,6 +115,7 @@ const editor: Module<EditorState, any> = {
       } else {
         commit(MODEL.CLEAR)
       }
+      console.log(box)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)

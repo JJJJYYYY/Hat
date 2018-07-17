@@ -8,7 +8,7 @@ import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/types'
 import { Coord, EleBox } from '@/types/editor'
 
-import { noop } from '@/util'
+import { noop, getUuid } from '@/util'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 import { stop } from '@/util/decorator'
@@ -17,8 +17,6 @@ import { stop } from '@/util/decorator'
 // const PADDING = 20
 const ROTATE_POINT_TOP = 20
 const ROTATE_POINT_R = 6
-
-let uid = 0
 
 let clickTime = 0
 let selectNum = 0
@@ -35,7 +33,7 @@ export default class Box extends Vue {
   name = 'Box'
 
   dir: string = ''
-  boxId = ++uid
+  boxId = getUuid()
   points: string[] = [
     `${DIR.LEFT}-${DIR.BOTTOM}`,
     `${DIR.LEFT}`,

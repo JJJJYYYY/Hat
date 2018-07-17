@@ -1,5 +1,10 @@
 import { MODEL } from '@/enum/editor'
 import { empty } from '@/util'
+import { EleRect } from '@/types/editor'
+
+export function getRectPath ({ x1, x2, y1, y2 }: EleRect): string {
+  return `M${x1} ${y1}L${x1} ${y2}L${x2} ${y2}L${x2} ${y1}Z`
+}
 
 const origin: PropertyDescriptor = {
   value (path: number[][]) {

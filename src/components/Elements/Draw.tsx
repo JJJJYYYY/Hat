@@ -2,9 +2,9 @@ import Vue from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 
-import { HatElement, Coord, EleChangeStage, EleLocation } from '@/types/editor'
-import { copyElement, noop } from '@/util'
-import getDrawMethod from '@/util/draw'
+import { HatElement, Coord, Attrs, EleChangeStage, EleLocation } from '@/types/editor'
+import { copyElement, noop, getUuid } from '@/util'
+import getDrawMethod, { getRectPath } from '@/util/draw'
 import { TYPE } from '@/enum/store'
 
 import Box from './Box'
@@ -29,21 +29,39 @@ export default class DrawPen extends Vue {
   }
 
   render () {
-    const { x, y, width, height, rotate } = this.element.attrs
+    const {
+      d,
+      scaling,
+      commitState,
+      element: {
+        attrs: {
+          x,
+          y,
+          width,
+          height,
+          rotate
+        }
+      }
+    } = this
 
     return (
-      <Box
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        rotate={rotate}
-        scaling={this.scaling}
-        onChange={this.commitState}>
-        <DrawPath
-          d={this.d}
-        />
-      </Box>
+      // <Box
+      //   x={x}
+      //   y={y}
+      //   width={width}
+      //   height={height}
+      //   rotate={rotate}
+      //   scaling={scaling}
+      //   onChange={commitState}
+      // >
+      // </Box>
+      <path
+        d={d}
+        stroke-width='5'
+        stroke='#000'
+        vector-effect='non-scaling-stroke'
+        fill='none'
+      />
     )
   }
 
@@ -178,5 +196,14 @@ export default class DrawPen extends Vue {
       width: r * 2,
       height: r * 2
     }
+  }
+
+  getBorderPath ({ x, y, width, height }: Attrs): string {
+    return getRectPath({
+      x1: x,
+      y1: y,
+      x2: x + width,
+      y2: y + height
+    })
   }
 }
