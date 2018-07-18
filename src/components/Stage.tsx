@@ -15,8 +15,10 @@ import Ruler from '@/components/Panel/Ruler'
 
 import { noop, empty } from '@/util'
 import event from '@/util/event'
+import { getUuid } from '@/util/uuid'
 import getDrawMethod, { getRectPath } from '@/util/draw'
 import { self, once, ctrl, prevent } from '@/util/decorator'
+import SelectBox from '@/components/Elements/MoveBox'
 
 let clickTime = 0
 
@@ -29,6 +31,8 @@ function isDraw (model: string) {
 
 @Component
 export default class Stage extends Vue {
+  startPoint?: Coord
+
   @Provide() select: EleRect | null = null
   @Provide() currDraw?: HatElement
   @Provide() drawPath: number[][] = []
@@ -41,12 +45,12 @@ export default class Stage extends Vue {
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.elements) elements!: HatElement[]
   @State(state => state.editor.boxIds) private boxIds!: number[]
+  @State(state => state.editor.selectedElements) private selectedElements!: HatElement[]
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
   @Mutation(TYPE.SCALE_RADIO) private scaleRatio!: Function
   @Mutation(MODEL.CANCEL) private cancelSelect!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
-  // @Getter private getElementCount!: number
   @Action private pressMultiply!: Function
 
   render (): VNode {
@@ -57,13 +61,23 @@ export default class Stage extends Vue {
       selectPath,
       realPath,
       renderStage,
-      renderElements
+      renderSelectBoxes,
+      renderElements,
+      onDrawDown,
+      onDrawMove,
+      onDrawUp,
+      onDragDown,
+      onDragMove,
+      onDragUp
     } = this
 
     return (
       <div
         ref='stage'
         class='stage'
+        onMousedown={onDragDown}
+        onMousemove={onDragMove}
+        onMouseup={onDragUp}
       >
         <div
           ref='stageContain'
@@ -77,6 +91,7 @@ export default class Stage extends Vue {
                 true,
                 [
                   renderElements(),
+                  renderSelectBoxes(),
                   <DrawPath
                     className='select-box'
                     color='blue'
@@ -93,7 +108,10 @@ export default class Stage extends Vue {
                     width='5'
                     d={realPath}
                   />
-                ]
+                ],
+                onDrawDown,
+                onDrawMove,
+                onDrawUp
               )
             ]
           }
@@ -103,9 +121,14 @@ export default class Stage extends Vue {
     )
   }
 
+  renderSelectBoxes (): VNode[] {
+    return this.selectedElements.map(
+      (ele, i) => <SelectBox element={ele} index={i} key={ele.id} />
+    )
+  }
+
   renderElements (): VNode[] {
-    const elements = this.elements.map(this.getElement)
-    return elements
+    return this.elements.map(this.getElement)
   }
 
   getElement (ele: HatElement, i: number) {
@@ -115,15 +138,20 @@ export default class Stage extends Vue {
       : null
   }
 
-  renderStage (id: string, style: ElementStyle, show: boolean, children: Vue[]) {
+  renderStage (
+    id: string,
+    style: ElementStyle,
+    show: boolean,
+    children: Vue[],
+    onMousedown: Function = noop,
+    onMousemove: Function = noop,
+    onMouseup: Function = noop
+  ) {
     const {
       width,
       height,
       isDrawing,
       onDblclick,
-      onMousedown,
-      onMousemove,
-      onMouseup,
       realPath
     } = this
 
@@ -217,7 +245,7 @@ export default class Stage extends Vue {
     }
   }
 
-  onMousedown (e: MouseEvent) {
+  onDrawDown (e: MouseEvent) {
     clickTime = Date.now()
     if (isDraw(this.model)) {
       switch (this.model) {
@@ -235,7 +263,7 @@ export default class Stage extends Vue {
     }
   }
 
-  onMousemove (e: MouseEvent) {
+  onDrawMove (e: MouseEvent) {
     if (isDraw(this.model)) {
       switch (this.model) {
         case MODEL.DRAW_POLY:
@@ -253,7 +281,7 @@ export default class Stage extends Vue {
     }
   }
 
-  onMouseup (e: MouseEvent) {
+  onDrawUp (e: MouseEvent) {
     if (this.currDraw) {
       this.drawPoint([e.offsetX, e.offsetY])
       switch (this.model) {
@@ -266,16 +294,30 @@ export default class Stage extends Vue {
       this.select = null
       this.pressMultiply(false)
     }
-    if (
-      e.target === e.currentTarget &&
-      Date.now() - clickTime < 300
-    ) {
-      this.selectBox()
+  }
+
+  onDragDown (e: MouseEvent) {
+    this.startPoint = { x: e.offsetX, y: e.offsetY }
+  }
+
+  onDragMove (e: MouseEvent) {
+    switch (this.model) {
+      default:
+        this.selectedElements.forEach(ele => ele.onMove(e, this.startPoint))
+    }
+  }
+
+  onDragUp (e: MouseEvent) {
+    switch (this.model) {
+      default:
+        this.selectedElements.forEach(ele => ele.onCommit(e))
+        return
     }
   }
 
   createDraw (type: string, point: number[]) {
     this.currDraw = {
+      id: getUuid(),
       type: type,
       attrs: {
         x: 0,
@@ -284,7 +326,11 @@ export default class Stage extends Vue {
         height: 0,
         rotate: 0,
         d: []
-      }
+      },
+      onMove: noop,
+      onScale: noop,
+      onRotate: noop,
+      onCommit: noop
     }
     this.drawPoint(point)
   }

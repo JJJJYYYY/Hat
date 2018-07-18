@@ -4,20 +4,18 @@ import { Module } from 'vuex'
 import { TYPE } from '@/enum/store'
 import { MODEL } from '@/enum/editor'
 
-import { Size, HatElement, Coord, EleBox, EleLocation } from '@/types/editor'
+import { Size, HatElement, Coord, EleLocation } from '@/types/editor'
 
-let boxes: EleBox[] = []
+// let selected: HatElement[] = []
 
 interface EditorState {
   window: Size,
   stage: Coord & Size,
   multiply: boolean,
   model: string,
-  notActiveModel: string,
-  ratio: number,
-  boxIds: number[],
-  elements: HatElement[],
-  currEle?: HatElement
+  ratio: number, // scale
+  selectedElements: HatElement[]
+  elements: HatElement[]
 }
 
 const editor: Module<EditorState, any> = {
@@ -34,19 +32,17 @@ const editor: Module<EditorState, any> = {
     },
     multiply: false,
     model: MODEL.NONE,
-    notActiveModel: MODEL.NONE,
     ratio: 1,
-    boxIds: [],
     elements: [],
-    currEle: undefined
+    selectedElements: []
   },
   getters: {
-    selectedBoxes (state): EleBox[] {
-      return state.boxIds && boxes
-    },
-    getElementCount (state): number {
-      return state.elements.length
-    }
+    // selectedElements (state): EleBox[] {
+    //   return state.boxIds && boxes
+    // },
+    // getElementCount (state): number {
+    //   return state.elements.length
+    // }
   },
   mutations: {
     // model: move, resize, select, multiply, null=''
@@ -56,15 +52,17 @@ const editor: Module<EditorState, any> = {
     [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, context }) {
       change.call(context, state.elements[i], changeState)
     },
-    [TYPE.CHANGE_ELE_LOC] (state: EditorState, { i = 0, x, y, width, height }: EleLocation) {
-      const ele = state.elements[i]
+    [TYPE.UPDATE_ELE] (state: EditorState, newEle: HatElement) {
+      const ele = state.elements.find(e => e.id === newEle.id)!
 
-      if (ele) {
-        ele.attrs.x = x
-        ele.attrs.y = y
-        ele.attrs.width = width
-        ele.attrs.height = height
-      }
+      ele.attrs.x = newEle.attrs.x
+      ele.attrs.y = newEle.attrs.y
+      ele.attrs.width = newEle.attrs.width
+      ele.attrs.height = newEle.attrs.height
+      ele.onMove = newEle.onMove
+      ele.onScale = newEle.onScale
+      ele.onRotate = newEle.onRotate
+      ele.onCommit = newEle.onCommit
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
@@ -77,23 +75,19 @@ const editor: Module<EditorState, any> = {
       state.stage.x = x
       state.stage.y = y
     },
-    [MODEL.MULTIPLY] (state: EditorState, box: EleBox) {
-      if (!state.boxIds.includes(box.boxId)) {
-        boxes.push(box)
-        state.boxIds.push(box.boxId)
+    [MODEL.MULTIPLY] (state: EditorState, ele: HatElement) {
+      if (!state.selectedElements.includes(ele)) {
+        state.selectedElements.push(ele)
       }
     },
-    [MODEL.SELECT] (state: EditorState, box: EleBox) {
-      boxes = [box]
-      state.boxIds = [box.boxId]
+    [MODEL.SELECT] (state: EditorState, ele: HatElement) {
+      state.selectedElements = [ele]
     },
-    [MODEL.CANCEL] (state: EditorState, box: EleBox) {
-      boxes = boxes.filter(select => select !== box)
-      state.boxIds = boxes.map(select => select.boxId)
+    [MODEL.CANCEL] (state: EditorState, ele: HatElement) {
+      state.selectedElements = state.selectedElements.filter(select => select !== ele)
     },
     [MODEL.CLEAR] (state: EditorState) {
-      boxes = []
-      state.boxIds = []
+      state.selectedElements = []
     },
     [TYPE.ADD_ELE] (state: EditorState, ele: HatElement) {
       state.elements.push(ele)
@@ -103,19 +97,17 @@ const editor: Module<EditorState, any> = {
     }
   },
   actions: {
-    selectBox ({ commit, state }, box?: EleBox) {
-      if (box) {
-        if (box.boxId) {
-          if (state.multiply && state.boxIds.includes(box.boxId)) {
-            commit(MODEL.CANCEL, box)
-          } else {
-            commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, box)
-          }
+    selectBox ({ commit, state }, ele?: HatElement) {
+      if (ele) {
+        if (state.multiply && state.selectedElements.includes(ele)) {
+          commit(MODEL.CANCEL, ele)
+        } else {
+          commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, ele)
         }
       } else {
         commit(MODEL.CLEAR)
       }
-      console.log(box)
+      console.log(ele)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)

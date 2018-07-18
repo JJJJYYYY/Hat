@@ -19,9 +19,14 @@ export interface Attrs extends Size {
 }
 
 export interface HatElement {
+  id: string,
   type: string
-  attrs: Attrs
-  text?: string // only <text>
+  attrs: Attrs,
+  children?: HatElement[],
+  onMove: Function,
+  onScale: Function,
+  onRotate: Function,
+  onCommit: Function
 }
 
 export interface Coord {

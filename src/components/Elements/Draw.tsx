@@ -3,7 +3,7 @@ import { State, Mutation, Action } from 'vuex-class'
 import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 
 import { HatElement, Coord, Attrs, EleChangeStage, EleLocation } from '@/types/editor'
-import { copyElement, noop, getUuid } from '@/util'
+import { copyElement, noop } from '@/util'
 import getDrawMethod, { getRectPath } from '@/util/draw'
 import { TYPE } from '@/enum/store'
 
@@ -17,11 +17,18 @@ export default class DrawPen extends Vue {
 
   draw: Function
 
-  @Prop() element!: HatElement
-  @Prop() index!: number
+  @Provide() scale: Coord = { x: 1, y: 1 }
+  @Provide() offset: Coord = { x: 0, y: 0 }
+  @Provide() angle: number = 0
 
+  @Prop() index!: number
+  @Prop() element!: HatElement
+
+  @State(state => state.editor.stage) private stage!: Coord
+  @State(state => state.editor.ratio) private ratio!: number
+  @Action('selectBox') private select!: (ele: HatElement) => void
   @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
-  @Mutation(TYPE.CHANGE_ELE_LOC) private changeEleLoc!: Function
+  @Mutation(TYPE.UPDATE_ELE) private updateElement!: Function
 
   constructor () {
     super()
@@ -31,7 +38,7 @@ export default class DrawPen extends Vue {
   render () {
     const {
       d,
-      scaling,
+      transform,
       commitState,
       element: {
         attrs: {
@@ -45,22 +52,14 @@ export default class DrawPen extends Vue {
     } = this
 
     return (
-      // <Box
-      //   x={x}
-      //   y={y}
-      //   width={width}
-      //   height={height}
-      //   rotate={rotate}
-      //   scaling={scaling}
-      //   onChange={commitState}
-      // >
-      // </Box>
       <path
         d={d}
         stroke-width='5'
         stroke='#000'
         vector-effect='non-scaling-stroke'
         fill='none'
+        transform={transform}
+        onClick={this.onClick}
       />
     )
   }
@@ -72,18 +71,48 @@ export default class DrawPen extends Vue {
     return this.draw(this.element.attrs.d)
   }
 
-  mounted () {
-    this.commitLocation(this.element.attrs.d)
+  get transform (): string {
+    return (
+      `translate(${this.offset.x},${this.offset.y}) `
+    )
   }
 
-  scaling (dir: string, scale: Coord, offset: Coord): boolean {
-    // switch (this.element.type) {
-    //   case MODEL.DRAW_CIRCLE:
-    //     return true
-    //   default:
-    //     return true
-    // }
-    return true
+  mounted () {
+    this.commitUpdate(this.element)
+  }
+
+  onClick () {
+    this.select(this.element)
+  }
+
+  onMove (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
+    const { offset: thisOffset, stage, ratio } = this
+
+    thisOffset.x = (e.pageX - stage.x - offset.x) / ratio
+    thisOffset.y = (e.pageY - stage.y - offset.y) / ratio
+  }
+
+  onScale () {
+    console.log('scale')
+  }
+
+  onRotate () {
+    console.log('rotate')
+  }
+
+  onCommit () {
+    this.commitState({
+      offsetX: this.offset.x,
+      offsetY: this.offset.y,
+      scaleX: this.scale.x,
+      scaleY: this.scale.y,
+      rotate: this.angle
+    })
+    this.offset.x = 0
+    this.offset.y = 0
+    this.scale.x = 1
+    this.scale.y = 1
+    this.angle = 0
   }
 
   /**
@@ -138,18 +167,26 @@ export default class DrawPen extends Vue {
     })
   }
 
-  commitLocation (d: number[][]) {
+  commitUpdate (ele: HatElement) {
+    const newEle = copyElement(ele)
     let range: EleLocation
     switch (this.element.type) {
       case MODEL.DRAW_CIRCLE:
-        range = this.getCircleRange(d)
+        range = this.getCircleRange(ele.attrs.d)
         break
       default:
-        range = this.getBaseRange(d)
+        range = this.getBaseRange(ele.attrs.d)
     }
+    newEle.attrs.x = range.x
+    newEle.attrs.y = range.y
+    newEle.attrs.width = range.width
+    newEle.attrs.height = range.height
+    newEle.onMove = this.onMove
+    newEle.onScale = this.onScale
+    newEle.onRotate = this.onRotate
+    newEle.onCommit = this.onCommit
 
-    range.i = this.index
-    this.changeEleLoc(range)
+    this.updateElement(newEle)
   }
 
   /**

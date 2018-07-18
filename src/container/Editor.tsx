@@ -88,9 +88,9 @@ export default class Editor extends Vue {
       case MODEL.NONE:
         break
       default:
-        this.selectedBoxes.forEach((box: EleBox) => {
-          (box as any)[this.model] && (box as any)[this.model](e, this.startPoint)
-        })
+        // this.selectedBoxes.forEach((box: EleBox) => {
+        //   (box as any)[this.model] && (box as any)[this.model](e, this.startPoint)
+        // })
     }
   }
 
@@ -99,7 +99,7 @@ export default class Editor extends Vue {
       case MODEL.NONE:
         break
       default:
-        this.selectedBoxes.forEach((box: EleBox) => box.commit(e))
+        // this.selectedBoxes.forEach((box: EleBox) => box.commit(e))
         return
     }
   }

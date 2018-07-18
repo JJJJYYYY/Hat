@@ -24,8 +24,3 @@ export const copyElement = deepCopy
 
 export function noop (): void {/* noop */}
 export function empty (): string { return '' }
-
-let uid = 0
-export function getUuid () {
-  return ++uid
-}

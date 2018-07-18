@@ -8,7 +8,7 @@ import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/types'
 import { Coord, EleBox } from '@/types/editor'
 
-import { noop, getUuid } from '@/util'
+import { noop } from '@/util'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 import { stop } from '@/util/decorator'
@@ -33,7 +33,7 @@ export default class Box extends Vue {
   name = 'Box'
 
   dir: string = ''
-  boxId = getUuid()
+  boxId = 0
   points: string[] = [
     `${DIR.LEFT}-${DIR.BOTTOM}`,
     `${DIR.LEFT}`,
