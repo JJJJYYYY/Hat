@@ -22,7 +22,6 @@ export default class Editor extends Vue {
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.notActiveModel) notActiveModel!: string
   @Getter selectedBoxes!: EleBox[]
-  @Mutation(TYPE.CHANGE_NOT_ACTIVE_MODEL) private changeNotActiveModel!: Function
   @Action private pressMultiply!: Function
 
   render (): VNode {

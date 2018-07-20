@@ -1,6 +1,6 @@
 import Vue, { VNode } from 'vue'
 import { State, Mutation, Action } from 'vuex-class'
-import { Component, Provide, Prop, Watch, Model } from 'vue-property-decorator'
+import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 import '@/style/elements/box.less'
 
 import { MODEL } from '@/enum/editor'
@@ -8,26 +8,25 @@ import { TYPE } from '@/enum/store'
 import { ElementStyle } from '@/types'
 import { Coord, EleBox, HatElement } from '@/types/editor'
 
-import { noop } from '@/util'
+import { noop, copyElement } from '@/util'
 import event from '@/util/event'
 import EditorConfig from '@/config/editor'
 import { stop } from '@/util/decorator'
+import ChangeEle from '@/minix/ChangeEle'
 
 @Component
-export default class MoveBox extends Vue {
+export default class MoveBox extends ChangeEle {
   name = 'MoveBox'
 
-  @Provide() scale: Coord = { x: 1, y: 1 }
-  @Provide() offset: Coord = { x: 0, y: 0 }
-  @Provide() angle: number = 0
-
-  @Prop() element!: HatElement
-  @State(state => state.editor.stage) private stage!: Coord
-  @State(state => state.editor.ratio) private ratio!: number
+  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: (model: string) => void
+  @Mutation(TYPE.ELE_OFFSET) private moveEle!: (offset: Coord) => void
   // @Action('selectBox') private select!: (ele: HatElement) => void
 
   render (): VNode {
     const {
+      onMousedown,
+      onMouseup,
+      transform,
       element: {
         attrs: {
           x,
@@ -46,14 +45,39 @@ export default class MoveBox extends Vue {
         y={y}
         width={width}
         height={height}
+        transform={transform}
+        onMousedown={onMousedown}
+        onMouseup={onMouseup}
       ></rect>
     )
   }
 
-  [MODEL.MOVE] (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
-    const { offset: thisOffset, stage, ratio } = this
+  mounted () {
+    this.commitUpdate(this.element)
+  }
 
-    thisOffset.x = (e.pageX - stage.x - offset.x) / ratio
-    thisOffset.y = (e.pageY - stage.y - offset.y) / ratio
+  commitUpdate (ele: HatElement) {
+    const newEle = copyElement(ele)
+    newEle.onMove = this.onMove.bind(this)
+
+    this.updateElement(newEle)
+  }
+
+  onMousedown () {
+    this.changeModel(MODEL.MOVE)
+  }
+
+  onMouseup () {
+    // private onDragUp model === NONE
+    this.$nextTick(() => this.changeModel(MODEL.NONE))
+  }
+
+  onMove (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
+    const { stage, ratio, moveEle } = this
+
+    moveEle({
+      x: (e.pageX - stage.x - offset.x) / ratio,
+      y: (e.pageY - stage.y - offset.y) / ratio
+    })
   }
 }

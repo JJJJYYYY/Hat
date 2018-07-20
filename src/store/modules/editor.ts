@@ -9,13 +9,16 @@ import { Size, HatElement, Coord, EleLocation } from '@/types/editor'
 // let selected: HatElement[] = []
 
 interface EditorState {
-  window: Size,
-  stage: Coord & Size,
-  multiply: boolean,
-  model: string,
-  ratio: number, // scale
+  window: Size
+  stage: Coord & Size
+  multiply: boolean
+  model: string
+  ratio: number // scale
   selectedElements: HatElement[]
   elements: HatElement[]
+  offset: Coord
+  scale: Coord
+  angle: number
 }
 
 const editor: Module<EditorState, any> = {
@@ -34,7 +37,10 @@ const editor: Module<EditorState, any> = {
     model: MODEL.NONE,
     ratio: 1,
     elements: [],
-    selectedElements: []
+    selectedElements: [],
+    scale: { x: 1, y: 1 },
+    offset: { x: 0, y: 0 },
+    angle: 0
   },
   getters: {
     // selectedElements (state): EleBox[] {
@@ -48,9 +54,14 @@ const editor: Module<EditorState, any> = {
     // model: move, resize, select, multiply, null=''
     [TYPE.CHANGE_MODEL] (state: EditorState, model: string) {
       state.model = model
+      console.info('当前状态：', model)
     },
     [TYPE.CHANGE_ELE] (state: EditorState, { change, i, changeState, context }) {
       change.call(context, state.elements[i], changeState)
+
+      state.scale = { x: 1, y: 1 }
+      state.offset = { x: 0, y: 0 }
+      state.angle = 0
     },
     [TYPE.UPDATE_ELE] (state: EditorState, newEle: HatElement) {
       const ele = state.elements.find(e => e.id === newEle.id)!
@@ -94,6 +105,15 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.SCALE_RADIO] (state: EditorState, ratio: number) {
       state.ratio = ratio
+    },
+    [TYPE.ELE_OFFSET] (state: EditorState, offset: Coord) {
+      state.offset = offset
+    },
+    [TYPE.ELE_SCALE] (state: EditorState, scale: Coord) {
+      state.scale = scale
+    },
+    [TYPE.ELE_ROTATE] (state: EditorState, angle: number) {
+      state.angle = angle
     }
   },
   actions: {
@@ -107,13 +127,17 @@ const editor: Module<EditorState, any> = {
       } else {
         commit(MODEL.CLEAR)
       }
-      console.log(ele)
+      console.info('选中元素：', ele)
     },
     pressMultiply ({ commit, state }, press: boolean) {
       commit(TYPE.PRESS_MULTIPLY, press)
       // press
       //   ? commit(TYPE.PRESS_MULTIPLY, true)
       //   : setTimeout(() => commit(TYPE.PRESS_MULTIPLY, false), 600)
+    },
+    transformEle ({ commit, state }, { scale, offset }) {
+      commit(TYPE.ELE_OFFSET, offset)
+      commit(TYPE.ELE_SCALE, scale)
     }
   }
 }

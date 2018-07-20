@@ -10,25 +10,19 @@ import { TYPE } from '@/enum/store'
 import Box from './Box'
 import DrawPath from './DrawPath'
 import { MODEL } from '@/enum/editor'
+import ChangeEle from '@/minix/ChangeEle'
 
 @Component
-export default class DrawPen extends Vue {
+export default class DrawPen extends ChangeEle {
   name = 'Draw'
 
   draw: Function
 
-  @Provide() scale: Coord = { x: 1, y: 1 }
-  @Provide() offset: Coord = { x: 0, y: 0 }
-  @Provide() angle: number = 0
-
   @Prop() index!: number
-  @Prop() element!: HatElement
 
-  @State(state => state.editor.stage) private stage!: Coord
-  @State(state => state.editor.ratio) private ratio!: number
+  @State(state => state.editor.selectedElements) private selectedElements!: HatElement[]
   @Action('selectBox') private select!: (ele: HatElement) => void
   @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
-  @Mutation(TYPE.UPDATE_ELE) private updateElement!: Function
 
   constructor () {
     super()
@@ -38,7 +32,7 @@ export default class DrawPen extends Vue {
   render () {
     const {
       d,
-      transform,
+      trans,
       commitState,
       element: {
         attrs: {
@@ -48,7 +42,8 @@ export default class DrawPen extends Vue {
           height,
           rotate
         }
-      }
+      },
+      onClick
     } = this
 
     return (
@@ -58,8 +53,8 @@ export default class DrawPen extends Vue {
         stroke='#000'
         vector-effect='non-scaling-stroke'
         fill='none'
-        transform={transform}
-        onClick={this.onClick}
+        transform={trans}
+        onClick={onClick}
       />
     )
   }
@@ -71,10 +66,12 @@ export default class DrawPen extends Vue {
     return this.draw(this.element.attrs.d)
   }
 
-  get transform (): string {
-    return (
-      `translate(${this.offset.x},${this.offset.y}) `
-    )
+  private get selected (): boolean {
+    return this.selectedElements.includes(this.element)
+  }
+
+  private get trans (): string {
+    return this.selected ? this.transform : ''
   }
 
   mounted () {
@@ -85,34 +82,19 @@ export default class DrawPen extends Vue {
     this.select(this.element)
   }
 
-  onMove (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {
-    const { offset: thisOffset, stage, ratio } = this
-
-    thisOffset.x = (e.pageX - stage.x - offset.x) / ratio
-    thisOffset.y = (e.pageY - stage.y - offset.y) / ratio
-  }
-
-  onScale () {
-    console.log('scale')
-  }
-
-  onRotate () {
-    console.log('rotate')
-  }
-
   onCommit () {
-    this.commitState({
-      offsetX: this.offset.x,
-      offsetY: this.offset.y,
-      scaleX: this.scale.x,
-      scaleY: this.scale.y,
-      rotate: this.angle
+    this.changeEle({
+      i: this.index,
+      changeState: {
+        offsetX: this.offset.x,
+        offsetY: this.offset.y,
+        scaleX: this.scale.x,
+        scaleY: this.scale.y,
+        rotate: this.angle
+      },
+      change: this.changeState,
+      context: this
     })
-    this.offset.x = 0
-    this.offset.y = 0
-    this.scale.x = 1
-    this.scale.y = 1
-    this.angle = 0
   }
 
   /**
@@ -159,12 +141,7 @@ export default class DrawPen extends Vue {
    * @param changeState
    */
   commitState (changeState: EleChangeStage) {
-    this.changeEle({
-      i: this.index,
-      changeState,
-      change: this.changeState,
-      context: this
-    })
+    //
   }
 
   commitUpdate (ele: HatElement) {
@@ -181,10 +158,7 @@ export default class DrawPen extends Vue {
     newEle.attrs.y = range.y
     newEle.attrs.width = range.width
     newEle.attrs.height = range.height
-    newEle.onMove = this.onMove
-    newEle.onScale = this.onScale
-    newEle.onRotate = this.onRotate
-    newEle.onCommit = this.onCommit
+    newEle.onCommit = this.onCommit.bind(this)
 
     this.updateElement(newEle)
   }

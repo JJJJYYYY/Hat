@@ -19,6 +19,7 @@ import { getUuid } from '@/util/uuid'
 import getDrawMethod, { getRectPath } from '@/util/draw'
 import { self, once, ctrl, prevent } from '@/util/decorator'
 import SelectBox from '@/components/Elements/MoveBox'
+import ScaleBox from '@/components/Elements/ScaleBox'
 
 let clickTime = 0
 
@@ -62,6 +63,7 @@ export default class Stage extends Vue {
       realPath,
       renderStage,
       renderSelectBoxes,
+      renderScaleBox,
       renderElements,
       onDrawDown,
       onDrawMove,
@@ -92,6 +94,7 @@ export default class Stage extends Vue {
                 [
                   renderElements(),
                   renderSelectBoxes(),
+                  renderScaleBox(),
                   <DrawPath
                     className='select-box'
                     color='blue'
@@ -119,6 +122,15 @@ export default class Stage extends Vue {
         <Ruler />
       </div>
     )
+  }
+
+  renderScaleBox (): VNode | undefined {
+    const elements = this.selectedElements
+    if (elements.length === 1) {
+      return (
+        <ScaleBox element={elements[0]} />
+      )
+    }
   }
 
   renderSelectBoxes (): VNode[] {
@@ -302,8 +314,15 @@ export default class Stage extends Vue {
 
   onDragMove (e: MouseEvent) {
     switch (this.model) {
+      case MODEL.MOVE:
+        if (this.startPoint) {
+          this.selectedElements.forEach(ele => ele.onMove(e, this.startPoint))
+        }
+        break
+      case MODEL.SCALE:
+        this.selectedElements.forEach(ele => ele.onScale(e))
+        break
       default:
-        this.selectedElements.forEach(ele => ele.onMove(e, this.startPoint))
     }
   }
 
@@ -311,8 +330,8 @@ export default class Stage extends Vue {
     switch (this.model) {
       default:
         this.selectedElements.forEach(ele => ele.onCommit(e))
-        return
     }
+    this.changeModel(MODEL.NONE)
   }
 
   createDraw (type: string, point: number[]) {
