@@ -35,12 +35,16 @@ const POINTS: string[] = [
   `${DIR.BOTTOM}`
 ]
 
+let originScale: Function = noop
+let originRotate: Function = noop
+
 @Component
 export default class MoveBox extends ChangeEle {
   name = 'MoveBox'
 
   dir: string = ''
 
+  @Mutation(TYPE.ELE_ROTATE) private rotateEle!: (angle: number) => void
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: (model: string) => void
   @Action private transformEle!: Function
 
@@ -155,15 +159,34 @@ export default class MoveBox extends ChangeEle {
     this.commitUpdate(this.element)
   }
 
-  commitUpdate (ele: HatElement) {
-    const newEle = copyElement(ele)
-    newEle.onScale = this.onScale.bind(this)
+  @Watch('element')
+  commitUpdate (ele: HatElement, oldEle?: HatElement) {
+    let onScale
+    let onRotate
+    if (oldEle) {
+      onScale = oldEle.onScale
+      onRotate = oldEle.onRotate
+    }
 
+    const newEle = copyElement(ele)
+    originScale = ele.onScale
+    originRotate = ele.onRotate
+    // vue had bind this in self methods, but I still bind `this`
+    newEle.onScale = onScale || this.onScale.bind(this)
+    newEle.onRotate = onRotate || this.onRotate.bind(this)
+
+    // TODO: may be I should unbind oldEle `onScale` and `onRotate`
     this.updateElement(newEle)
   }
 
   onMouseup () {
     this.$nextTick(() => this.changeModel(MODEL.NONE))
+  }
+
+  @stop
+  onScaleStart (dir: string, e: MouseEvent) {
+    this.dir = dir
+    this.changeModel(MODEL.SCALE)
   }
 
   onScale (e: MouseEvent) {
@@ -209,10 +232,10 @@ export default class MoveBox extends ChangeEle {
     this.transformEle({ scale, offset })
   }
 
-  @stop
-  onScaleStart (dir: string, e: MouseEvent) {
-    this.dir = dir
-    this.changeModel(MODEL.SCALE)
+  onRotate (e: MouseEvent) {
+    const { x, y } = this.centerPoint
+    const { offsetX: x1, offsetY: y1 } = e // todo：(y1 - y) / (x1 - x)
+    this.rotateEle(Math.atan2(x1 - x, y - y1) / Math.PI * 180 - this.element.attrs.rotate)
   }
 
   @stop

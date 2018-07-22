@@ -322,6 +322,9 @@ export default class Stage extends Vue {
       case MODEL.SCALE:
         this.selectedElements.forEach(ele => ele.onScale(e))
         break
+      case MODEL.ROTATE:
+        this.selectedElements.forEach(ele => ele.onRotate(e))
+        break
       default:
     }
   }
@@ -329,7 +332,8 @@ export default class Stage extends Vue {
   onDragUp (e: MouseEvent) {
     switch (this.model) {
       default:
-        this.selectedElements.forEach(ele => ele.onCommit(e))
+        const { offset, scale, angle } = this.$store.state.editor
+        this.selectedElements.forEach(ele => ele.onCommit(offset, scale, angle))
     }
     this.changeModel(MODEL.NONE)
   }

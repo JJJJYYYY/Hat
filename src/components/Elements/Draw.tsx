@@ -4,7 +4,7 @@ import { Component, Provide, Prop, Watch } from 'vue-property-decorator'
 
 import { HatElement, Coord, Attrs, EleChangeStage, EleLocation } from '@/types/editor'
 import { copyElement, noop } from '@/util'
-import getDrawMethod, { getRectPath } from '@/util/draw'
+import getDrawMethod, { getRectPath, changeState } from '@/util/draw'
 import { TYPE } from '@/enum/store'
 
 import Box from './Box'
@@ -21,7 +21,6 @@ export default class DrawPen extends ChangeEle {
   @Prop() index!: number
 
   @State(state => state.editor.selectedElements) private selectedElements!: HatElement[]
-  @Action('selectBox') private select!: (ele: HatElement) => void
   @Mutation(TYPE.CHANGE_ELE) private changeEle!: Function
 
   constructor () {
@@ -43,7 +42,7 @@ export default class DrawPen extends ChangeEle {
           rotate
         }
       },
-      onClick
+      selectThis
     } = this
 
     return (
@@ -54,7 +53,7 @@ export default class DrawPen extends ChangeEle {
         vector-effect='non-scaling-stroke'
         fill='none'
         transform={trans}
-        onClick={onClick}
+        onMousedown={selectThis.bind(this)}
       />
     )
   }
@@ -70,69 +69,31 @@ export default class DrawPen extends ChangeEle {
     return this.selectedElements.includes(this.element)
   }
 
+  private get elementAngle (): string {
+    return `rotate(${this.element.attrs.rotate} ${this.centerPoint.x} ${this.centerPoint.y})`
+  }
+
   private get trans (): string {
-    return this.selected ? this.transform : ''
+    return this.selected ? this.transform : this.elementAngle
   }
 
   mounted () {
     this.commitUpdate(this.element)
   }
 
-  onClick () {
-    this.select(this.element)
-  }
-
-  onCommit () {
+  onCommit (offset: Coord, scale: Coord, angle: number) {
     this.changeEle({
       i: this.index,
       changeState: {
-        offsetX: this.offset.x,
-        offsetY: this.offset.y,
-        scaleX: this.scale.x,
-        scaleY: this.scale.y,
-        rotate: this.angle
+        offsetX: offset.x,
+        offsetY: offset.y,
+        scaleX: scale.x,
+        scaleY: scale.y,
+        rotate: angle
       },
-      change: this.changeState,
+      change: changeState,
       context: this
     })
-  }
-
-  /**
-   * change state function
-   *
-   * @param element
-   * @param param1
-   */
-  changeState (
-    element: HatElement,
-    { offsetX, offsetY, scaleX, scaleY, rotate }: EleChangeStage
-  ) {
-    const { type, attrs } = element
-    const baseNum = type === MODEL.DRAW_CIRCLE ? 2 : 1
-
-    attrs.x += offsetX
-    attrs.y += offsetY
-    attrs.rotate += rotate
-    // this way will not update, #https://vuejs.org/v2/guide/list.html#Caveats
-    // ```
-    // attrs.d.forEach((p: number[]) => {
-    //   p[0] = (p[0] + offsetX - attrs.x) * scaleX + attrs.x
-    //   p[1] = (p[1] + offsetY - attrs.y) * scaleY + attrs.y
-    // })
-    // ```
-    attrs.d = attrs.d.map((p: number[], i: number) => {
-      return [
-        (p[0] + offsetX - attrs.x) * scaleX + attrs.x,
-        (p[1] + offsetY - attrs.y) * scaleY + attrs.y
-      ]
-    })
-    let scaleW = attrs.width * scaleX
-    if (scaleX < 0) attrs.x += scaleW
-    attrs.width = Math.abs(scaleW)
-
-    let scaleH = attrs.height * scaleY
-    if (scaleY < 0) attrs.y += scaleH
-    attrs.height = Math.abs(scaleH)
   }
 
   /**

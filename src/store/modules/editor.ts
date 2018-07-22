@@ -77,6 +77,7 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
+      console.log('是否多选：', press)
     },
     [TYPE.RESIZE_WINDOW] (state: EditorState, { width, height }: Size) {
       state.window.width = width
@@ -118,10 +119,8 @@ const editor: Module<EditorState, any> = {
   },
   actions: {
     selectBox ({ commit, state }, ele?: HatElement) {
-      if (ele) {
-        if (state.multiply && state.selectedElements.includes(ele)) {
-          commit(MODEL.CANCEL, ele)
-        } else {
+      if (ele) { // TODO: cancel select
+        if (!state.selectedElements.includes(ele)) {
           commit(state.multiply ? MODEL.MULTIPLY : MODEL.SELECT, ele)
         }
       } else {

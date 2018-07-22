@@ -65,6 +65,7 @@ export default class MoveBox extends ChangeEle {
 
   onMousedown () {
     this.changeModel(MODEL.MOVE)
+    this.selectThis()
   }
 
   onMouseup () {

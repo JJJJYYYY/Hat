@@ -1,15 +1,11 @@
 import Vue from 'vue'
 import { Provide, Prop } from 'vue-property-decorator'
-import { State, Mutation } from 'vuex-class'
+import { State, Mutation, Action } from 'vuex-class'
 import { Coord, HatElement } from '@/types/editor'
 import { TYPE } from '@/enum/store'
 import { noop } from '@/util'
 
-let uuid = 1
 export default abstract class ChangeEle extends Vue {
-  @Provide() moveCb: Function = noop
-  id = ++uuid
-
   @Prop() element!: HatElement
   @State(state => state.editor.scale) protected scale!: Coord
   @State(state => state.editor.offset) protected offset!: Coord
@@ -17,9 +13,13 @@ export default abstract class ChangeEle extends Vue {
   @State(state => state.editor.stage) protected stage!: Coord
   @State(state => state.editor.ratio) protected ratio!: number
   @Mutation(TYPE.UPDATE_ELE) protected updateElement!: Function
+  @Action('selectBox') private selectEle!: (ele: HatElement) => void
 
-  get rotateAngle (): number {
-    return this.element.attrs.rotate + this.angle
+  abstract commitUpdate (ele: HatElement, oldEle?: HatElement): void
+
+  get rotateAngle (): string {
+    const angle = this.element.attrs.rotate + this.angle
+    return `rotate(${angle} ${this.centerPoint.x} ${this.centerPoint.y})`
   }
 
   get centerPoint (): Coord {
@@ -37,14 +37,17 @@ export default abstract class ChangeEle extends Vue {
   }
 
   get transform (): string {
-    console.log('id: ', this.id)
-    const { scale, element: { attrs: { x, y } } } = this
+    const { offset, scale, rotateAngle, element: { attrs: { x, y } } } = this
     return (
-      `translate(${this.offset.x},${this.offset.y}) ` +
+      `translate(${offset.x},${offset.y}) ` +
       `translate(${x},${y}) ` +
       `scale(${scale.x},${scale.y}) ` +
       `translate(${-x},${-y})` +
-      `rotate(${this.rotateAngle} ${this.centerPoint.x} ${this.centerPoint.y})`
+      rotateAngle
     )
+  }
+
+  selectThis () {
+    this.selectEle(this.element)
   }
 }

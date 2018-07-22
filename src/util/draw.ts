@@ -1,6 +1,44 @@
 import { MODEL } from '@/enum/editor'
 import { empty } from '@/util'
-import { EleRect } from '@/types/editor'
+import { EleRect, HatElement, EleChangeStage } from '@/types/editor'
+
+/**
+ * change state function
+ *
+ * @param element
+ * @param param1
+ */
+export function changeState (
+  element: HatElement,
+  { offsetX, offsetY, scaleX, scaleY, rotate }: EleChangeStage
+) {
+  const { type, attrs } = element
+  const baseNum = type === MODEL.DRAW_CIRCLE ? 2 : 1
+
+  attrs.x += offsetX
+  attrs.y += offsetY
+  attrs.rotate += rotate
+  // this way will not update, #https://vuejs.org/v2/guide/list.html#Caveats
+  // ```
+  // attrs.d.forEach((p: number[]) => {
+  //   p[0] = (p[0] + offsetX - attrs.x) * scaleX + attrs.x
+  //   p[1] = (p[1] + offsetY - attrs.y) * scaleY + attrs.y
+  // })
+  // ```
+  attrs.d = attrs.d.map((p: number[], i: number) => {
+    return [
+      (p[0] + offsetX - attrs.x) * scaleX + attrs.x,
+      (p[1] + offsetY - attrs.y) * scaleY + attrs.y
+    ]
+  })
+  let scaleW = attrs.width * scaleX
+  if (scaleX < 0) attrs.x += scaleW
+  attrs.width = Math.abs(scaleW)
+
+  let scaleH = attrs.height * scaleY
+  if (scaleY < 0) attrs.y += scaleH
+  attrs.height = Math.abs(scaleH)
+}
 
 export function getRectPath ({ x1, x2, y1, y2 }: EleRect): string {
   return `M${x1} ${y1}L${x1} ${y2}L${x2} ${y2}L${x2} ${y1}Z`
