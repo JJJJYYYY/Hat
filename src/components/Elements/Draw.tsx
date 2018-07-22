@@ -42,7 +42,8 @@ export default class DrawPen extends ChangeEle {
           rotate
         }
       },
-      selectThis
+      selectThis,
+      editThis
     } = this
 
     return (
@@ -54,6 +55,7 @@ export default class DrawPen extends ChangeEle {
         fill='none'
         transform={trans}
         onMousedown={selectThis.bind(this)}
+        onDblclick={editThis.bind(this)}
       />
     )
   }
@@ -106,6 +108,7 @@ export default class DrawPen extends ChangeEle {
   }
 
   commitUpdate (ele: HatElement) {
+    // TODO: try to be better, ex: not copy `d`
     const newEle = copyElement(ele)
     let range: EleLocation
     switch (this.element.type) {

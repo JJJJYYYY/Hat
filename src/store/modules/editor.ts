@@ -14,8 +14,9 @@ interface EditorState {
   multiply: boolean
   model: string
   ratio: number // scale
-  selectedElements: HatElement[]
   elements: HatElement[]
+  editElement?: HatElement
+  selectedElements: HatElement[]
   offset: Coord
   scale: Coord
   angle: number
@@ -37,6 +38,7 @@ const editor: Module<EditorState, any> = {
     model: MODEL.NONE,
     ratio: 1,
     elements: [],
+    editElement: void 0,
     selectedElements: [],
     scale: { x: 1, y: 1 },
     offset: { x: 0, y: 0 },
@@ -64,16 +66,18 @@ const editor: Module<EditorState, any> = {
       state.angle = 0
     },
     [TYPE.UPDATE_ELE] (state: EditorState, newEle: HatElement) {
-      const ele = state.elements.find(e => e.id === newEle.id)!
-
-      ele.attrs.x = newEle.attrs.x
-      ele.attrs.y = newEle.attrs.y
-      ele.attrs.width = newEle.attrs.width
-      ele.attrs.height = newEle.attrs.height
-      ele.onMove = newEle.onMove
-      ele.onScale = newEle.onScale
-      ele.onRotate = newEle.onRotate
-      ele.onCommit = newEle.onCommit
+      const ele = state.elements.find(e => e.id === newEle.id)
+      if (ele) {
+        ele.attrs.x = newEle.attrs.x
+        ele.attrs.y = newEle.attrs.y
+        ele.attrs.width = newEle.attrs.width
+        ele.attrs.height = newEle.attrs.height
+        ele.attrs.d = newEle.attrs.d
+        ele.onMove = newEle.onMove
+        ele.onScale = newEle.onScale
+        ele.onRotate = newEle.onRotate
+        ele.onCommit = newEle.onCommit
+      }
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
       state.multiply = press
@@ -115,6 +119,9 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.ELE_ROTATE] (state: EditorState, angle: number) {
       state.angle = angle
+    },
+    [TYPE.EDIT_ELEMENT] (state: EditorState, element?: HatElement) {
+      state.editElement = element
     }
   },
   actions: {

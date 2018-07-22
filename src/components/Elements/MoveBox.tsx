@@ -27,6 +27,7 @@ export default class MoveBox extends ChangeEle {
       onMousedown,
       onMouseup,
       transform,
+      editThis,
       element: {
         attrs: {
           x,
@@ -48,6 +49,7 @@ export default class MoveBox extends ChangeEle {
         transform={transform}
         onMousedown={onMousedown}
         onMouseup={onMouseup}
+        onDblclick={editThis.bind(this)}
       ></rect>
     )
   }

@@ -12,8 +12,7 @@ export function changeState (
   element: HatElement,
   { offsetX, offsetY, scaleX, scaleY, rotate }: EleChangeStage
 ) {
-  const { type, attrs } = element
-  const baseNum = type === MODEL.DRAW_CIRCLE ? 2 : 1
+  const { attrs } = element
 
   attrs.x += offsetX
   attrs.y += offsetY
@@ -66,7 +65,8 @@ function drawPen (path: number[][], old?: string): string {
     case 0:
       return ''
     case 1:
-      return `M${path[0][0] - POINT_R} ${path[0][1]} A${POINT_R} ${POINT_R},0,0,1,${path[0][0] - POINT_R} ${path[0][1]}`
+      return `M${path[0][0] - POINT_R} ${path[0][1]}` +
+        `A${POINT_R} ${POINT_R},0,0,1,${path[0][0] - POINT_R} ${path[0][1]}`
     case 2:
       return `M${path[0][0]} ${path[0][1]} L${path[1][0]} ${path[1][1]}`
     default:
@@ -77,7 +77,8 @@ function drawPen (path: number[][], old?: string): string {
         let p3 = path[len - 1]
         let start = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
         let end = [(p3[0] + p2[0]) / 2, (p3[1] + p2[1]) / 2]
-        return `${old.replace(lastReg, '')} Q${p2[0]} ${p2[1]} ${end[0]} ${end[1]} L${p3[0]} ${p3[1]}`
+        return `${old.replace(lastReg, '')}` +
+          `Q${p2[0]} ${p2[1]} ${end[0]} ${end[1]} L${p3[0]} ${p3[1]}`
       } else {
         let lastIndex = path.length - 1
         return path.reduce((d, p, i) => {

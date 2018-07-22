@@ -20,6 +20,7 @@ import getDrawMethod, { getRectPath } from '@/util/draw'
 import { self, once, ctrl, prevent } from '@/util/decorator'
 import SelectBox from '@/components/Elements/MoveBox'
 import ScaleBox from '@/components/Elements/ScaleBox'
+import EditPoint from '@/components/Elements/EditPoint'
 
 let clickTime = 0
 
@@ -110,7 +111,8 @@ export default class Stage extends Vue {
                   <DrawPath
                     width='5'
                     d={realPath}
-                  />
+                  />,
+                  <EditPoint />
                 ],
                 onDrawDown,
                 onDrawMove,
@@ -128,14 +130,16 @@ export default class Stage extends Vue {
     const elements = this.selectedElements
     if (elements.length === 1) {
       return (
-        <ScaleBox element={elements[0]} />
+        <keep-alive>
+          <ScaleBox element={elements[0]} key='select-box' />
+        </keep-alive>
       )
     }
   }
 
   renderSelectBoxes (): VNode[] {
     return this.selectedElements.map(
-      (ele, i) => <SelectBox element={ele} index={i} key={ele.id} />
+      (ele, i) => <SelectBox element={ele} key={i} />
     )
   }
 
@@ -146,7 +150,7 @@ export default class Stage extends Vue {
   getElement (ele: HatElement, i: number) {
     const ELEMENT = ElementsMap.get(ele.type)
     return ELEMENT
-      ? <ELEMENT element={ele} index={i} key={i} />
+      ? <ELEMENT element={ele} key={ele.id} index={i} />
       : null
   }
 

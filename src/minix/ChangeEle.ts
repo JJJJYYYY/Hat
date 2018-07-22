@@ -13,6 +13,7 @@ export default abstract class ChangeEle extends Vue {
   @State(state => state.editor.stage) protected stage!: Coord
   @State(state => state.editor.ratio) protected ratio!: number
   @Mutation(TYPE.UPDATE_ELE) protected updateElement!: Function
+  @Mutation(TYPE.EDIT_ELEMENT) protected editElement!: Function
   @Action('selectBox') private selectEle!: (ele: HatElement) => void
 
   abstract commitUpdate (ele: HatElement, oldEle?: HatElement): void
@@ -49,5 +50,9 @@ export default abstract class ChangeEle extends Vue {
 
   selectThis () {
     this.selectEle(this.element)
+  }
+
+  editThis () {
+    this.editElement(this.element)
   }
 }

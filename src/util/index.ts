@@ -1,5 +1,5 @@
 export function isDef (val: any): boolean {
-  return typeof val !== null && typeof val !== undefined
+  return typeof val !== null && typeof val !== void 0
 }
 
 export function isObject (anyVal: any): boolean {
@@ -7,14 +7,14 @@ export function isObject (anyVal: any): boolean {
 }
 
 export function deepCopy<T> (tar: T): T {
-  if (isObject(tar)) {
+  if (Array.isArray(tar)) {
+    return tar.map((t: any) => deepCopy<any>(t)) as any
+  } else if (isObject(tar)) {
     let newObj = Object.create(null)
     Object.keys(tar).forEach(k => {
       newObj[k] = deepCopy<any>((tar as any)[k])
     })
     return newObj
-  } else if (Array.isArray(tar)) {
-    return tar.map((t: any) => deepCopy<any>(t)) as any
   } else {
     return tar
   }

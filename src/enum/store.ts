@@ -12,5 +12,6 @@ export enum TYPE {
   SCALE_RADIO = 'scale_radio',
   ELE_OFFSET = 'ele_offset',
   ELE_SCALE = 'ele_scale',
-  ELE_ROTATE = 'ele_rotate'
+  ELE_ROTATE = 'ele_rotate',
+  EDIT_ELEMENT = 'edit_element'
 }

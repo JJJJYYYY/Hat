@@ -84,12 +84,6 @@ export default class Editor extends Vue {
 
   onMousemove (e: MouseEvent) {
     switch (this.model) {
-      case MODEL.NONE:
-        break
-      default:
-        // this.selectedBoxes.forEach((box: EleBox) => {
-        //   (box as any)[this.model] && (box as any)[this.model](e, this.startPoint)
-        // })
     }
   }
 
