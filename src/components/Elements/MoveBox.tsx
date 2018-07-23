@@ -18,7 +18,6 @@ import ChangeEle from '@/minix/ChangeEle'
 export default class MoveBox extends ChangeEle {
   name = 'MoveBox'
 
-  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: (model: string) => void
   @Mutation(TYPE.ELE_OFFSET) private moveEle!: (offset: Coord) => void
   // @Action('selectBox') private select!: (ele: HatElement) => void
 
@@ -60,7 +59,7 @@ export default class MoveBox extends ChangeEle {
 
   commitUpdate (ele: HatElement) {
     const newEle = copyElement(ele)
-    newEle.onMove = this.onMove.bind(this)
+    newEle.onMove = this.onMove
 
     this.updateElement(newEle)
   }
@@ -72,7 +71,7 @@ export default class MoveBox extends ChangeEle {
 
   onMouseup () {
     // private onDragUp model === NONE
-    this.$nextTick(() => this.changeModel(MODEL.NONE))
+    // this.$nextTick(() => this.changeModel(MODEL.NONE))
   }
 
   onMove (e: MouseEvent, offset: Coord = { x: 0, y: 0 }) {

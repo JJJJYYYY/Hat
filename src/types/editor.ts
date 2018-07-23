@@ -26,6 +26,7 @@ export interface HatElement {
   onMove: Function,
   onScale: Function,
   onRotate: Function,
+  onEdit: Function,
   onCommit: Function
 }
 

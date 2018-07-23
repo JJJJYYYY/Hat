@@ -4,6 +4,8 @@ import { State, Mutation, Action } from 'vuex-class'
 import { Coord, HatElement } from '@/types/editor'
 import { TYPE } from '@/enum/store'
 import { noop } from '@/util'
+import { MODEL } from '@/enum/editor'
+import { stop } from '@/util/decorator'
 
 export default abstract class ChangeEle extends Vue {
   @Prop() element!: HatElement
@@ -14,6 +16,7 @@ export default abstract class ChangeEle extends Vue {
   @State(state => state.editor.ratio) protected ratio!: number
   @Mutation(TYPE.UPDATE_ELE) protected updateElement!: Function
   @Mutation(TYPE.EDIT_ELEMENT) protected editElement!: Function
+  @Mutation(TYPE.CHANGE_MODEL) protected changeModel!: (model: string) => void
   @Action('selectBox') private selectEle!: (ele: HatElement) => void
 
   abstract commitUpdate (ele: HatElement, oldEle?: HatElement): void
@@ -52,7 +55,9 @@ export default abstract class ChangeEle extends Vue {
     this.selectEle(this.element)
   }
 
+  @stop
   editThis () {
     this.editElement(this.element)
+    this.changeModel(MODEL.EDITING)
   }
 }

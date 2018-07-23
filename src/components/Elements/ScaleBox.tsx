@@ -45,7 +45,6 @@ export default class MoveBox extends ChangeEle {
   dir: string = ''
 
   @Mutation(TYPE.ELE_ROTATE) private rotateEle!: (angle: number) => void
-  @Mutation(TYPE.CHANGE_MODEL) private changeModel!: (model: string) => void
   @Action private transformEle!: Function
 
   render (): VNode {
@@ -161,19 +160,10 @@ export default class MoveBox extends ChangeEle {
 
   @Watch('element')
   commitUpdate (ele: HatElement, oldEle?: HatElement) {
-    let onScale
-    let onRotate
-    if (oldEle) {
-      onScale = oldEle.onScale
-      onRotate = oldEle.onRotate
-    }
-
     const newEle = copyElement(ele)
-    originScale = ele.onScale
-    originRotate = ele.onRotate
-    // vue had bind this in self methods, but I still bind `this`
-    newEle.onScale = onScale || this.onScale.bind(this)
-    newEle.onRotate = onRotate || this.onRotate.bind(this)
+    // vue had bind this in self methods
+    newEle.onScale = this.onScale
+    newEle.onRotate = this.onScale
 
     // TODO: may be I should unbind oldEle `onScale` and `onRotate`
     this.updateElement(newEle)

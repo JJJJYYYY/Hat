@@ -26,7 +26,7 @@ let clickTime = 0
 
 let oldPath = ''
 
-const DrawModel = [ MODEL.DRAW_LINE, MODEL.DRAW_PEN, MODEL.DRAW_CIRCLE, MODEL.DRAW_POLY ]
+const DrawModel = [ MODEL.DRAW_LINE, MODEL.DRAW_PEN, MODEL.DRAW_CIRCLE, MODEL.DRAW_POLY, MODEL.EDITING ]
 function isDraw (model: string) {
   return (DrawModel as string[]).includes(model)
 }
@@ -46,7 +46,7 @@ export default class Stage extends Vue {
   @State(state => state.editor.ratio) ratio!: number
   @State(state => state.editor.window) window!: Size
   @State(state => state.editor.elements) elements!: HatElement[]
-  @State(state => state.editor.boxIds) private boxIds!: number[]
+  @State(state => state.editor.editElement) private editElement?: HatElement
   @State(state => state.editor.selectedElements) private selectedElements!: HatElement[]
   @Mutation(TYPE.STAGE_CHANGE) private changeStage!: Function
   @Mutation(TYPE.CHANGE_MODEL) private changeModel!: Function
@@ -285,6 +285,9 @@ export default class Stage extends Vue {
         case MODEL.DRAW_POLY:
           this.replacePoint([e.offsetX, e.offsetY])
           break
+        case MODEL.EDITING:
+          this.editElement && this.editElement.onEdit(e)
+          break
         default:
           this.drawPoint([e.offsetX, e.offsetY])
       }
@@ -339,7 +342,7 @@ export default class Stage extends Vue {
         const { offset, scale, angle } = this.$store.state.editor
         this.selectedElements.forEach(ele => ele.onCommit(offset, scale, angle))
     }
-    this.changeModel(MODEL.NONE)
+    // this.changeModel(MODEL.NONE)
   }
 
   createDraw (type: string, point: number[]) {
@@ -357,6 +360,7 @@ export default class Stage extends Vue {
       onMove: noop,
       onScale: noop,
       onRotate: noop,
+      onEdit: noop,
       onCommit: noop
     }
     this.drawPoint(point)
@@ -391,23 +395,23 @@ export default class Stage extends Vue {
   }
 
   selectElement (range: EleRect, elements: HatElement[]) {
-    this.$children.forEach(ele => {
-      const box = ele.$children[0] as EleBox
-      if (this.model !== MODEL.NONE || !box || !box.boxId) return
-      const selected = this.boxIds.includes(box.boxId)
-      const inRange = this.inRange(range, box)
-      if (
-        !selected &&
-        inRange
-      ) {
-        this.selectBox(box)
-      } else if (
-        selected &&
-        !inRange
-      ) {
-        this.cancelSelect(box)
-      }
-    })
+    // this.$children.forEach(ele => {
+    //   const box = ele.$children[0] as EleBox
+    //   if (this.model !== MODEL.NONE || !box || !box.boxId) return
+    //   const selected = this.selectedElements.includes(box.boxId)
+    //   const inRange = this.inRange(range, box)
+    //   if (
+    //     !selected &&
+    //     inRange
+    //   ) {
+    //     this.selectBox(box)
+    //   } else if (
+    //     selected &&
+    //     !inRange
+    //   ) {
+    //     this.cancelSelect(box)
+    //   }
+    // })
   }
 
   onResizeWindow () {

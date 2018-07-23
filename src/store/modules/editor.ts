@@ -66,17 +66,9 @@ const editor: Module<EditorState, any> = {
       state.angle = 0
     },
     [TYPE.UPDATE_ELE] (state: EditorState, newEle: HatElement) {
-      const ele = state.elements.find(e => e.id === newEle.id)
-      if (ele) {
-        ele.attrs.x = newEle.attrs.x
-        ele.attrs.y = newEle.attrs.y
-        ele.attrs.width = newEle.attrs.width
-        ele.attrs.height = newEle.attrs.height
-        ele.attrs.d = newEle.attrs.d
-        ele.onMove = newEle.onMove
-        ele.onScale = newEle.onScale
-        ele.onRotate = newEle.onRotate
-        ele.onCommit = newEle.onCommit
+      const index = state.elements.findIndex(e => e.id === newEle.id)
+      if (index > -1) {
+        Object.assign(state.elements[index], newEle)
       }
     },
     [TYPE.PRESS_MULTIPLY] (state: EditorState, press: boolean) {
@@ -122,6 +114,7 @@ const editor: Module<EditorState, any> = {
     },
     [TYPE.EDIT_ELEMENT] (state: EditorState, element?: HatElement) {
       state.editElement = element
+      state.selectedElements = []
     }
   },
   actions: {

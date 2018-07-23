@@ -7,6 +7,7 @@ export enum MODEL {
   CANCEL = 'box_cancel',
   CLEAR = 'box_clear',
   SCALE = 'box_scale',
+  EDITING = 'ele_editing',
 
   DRAW_PEN = 'draw_pen',
   DRAW_LINE = 'draw_line',
