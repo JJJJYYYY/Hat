@@ -10,7 +10,7 @@ export enum TYPE {
   UPDATE_ELE = 'update_ele',
   CHANGE_ELE_LOC = 'ele_location',
   SCALE_RADIO = 'scale_radio',
-  ELE_OFFSET = 'ele_offset',
+  OFFSET = 'ele_offset',
   ELE_SCALE = 'ele_scale',
   ELE_ROTATE = 'ele_rotate',
   EDIT_ELEMENT = 'edit_element'

@@ -103,7 +103,7 @@ const editor: Module<EditorState, any> = {
     [TYPE.SCALE_RADIO] (state: EditorState, ratio: number) {
       state.ratio = ratio
     },
-    [TYPE.ELE_OFFSET] (state: EditorState, offset: Coord) {
+    [TYPE.OFFSET] (state: EditorState, offset: Coord) {
       state.offset = offset
     },
     [TYPE.ELE_SCALE] (state: EditorState, scale: Coord) {
@@ -135,7 +135,7 @@ const editor: Module<EditorState, any> = {
       //   : setTimeout(() => commit(TYPE.PRESS_MULTIPLY, false), 600)
     },
     transformEle ({ commit, state }, { scale, offset }) {
-      commit(TYPE.ELE_OFFSET, offset)
+      commit(TYPE.OFFSET, offset)
       commit(TYPE.ELE_SCALE, scale)
     }
   }

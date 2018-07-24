@@ -18,7 +18,7 @@ import ChangeEle from '@/minix/ChangeEle'
 export default class MoveBox extends ChangeEle {
   name = 'MoveBox'
 
-  @Mutation(TYPE.ELE_OFFSET) private moveEle!: (offset: Coord) => void
+  @Mutation(TYPE.OFFSET) private moveEle!: (offset: Coord) => void
   // @Action('selectBox') private select!: (ele: HatElement) => void
 
   render (): VNode {
@@ -59,7 +59,7 @@ export default class MoveBox extends ChangeEle {
 
   commitUpdate (ele: HatElement) {
     const newEle = copyElement(ele)
-    newEle.onMove = this.onMove
+    // newEle.onMove = this.onMove
 
     this.updateElement(newEle)
   }

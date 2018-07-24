@@ -40,6 +40,7 @@ export default class Stage extends Vue {
   @Provide() drawPath: number[][] = []
 
   @Action selectBox!: Function
+  @State(state => state.editor.stage) stage!: Coord
   @State(state => state.editor.stage.width) width!: number
   @State(state => state.editor.stage.height) height!: number
   @State(state => state.editor.model) model!: string
@@ -53,6 +54,7 @@ export default class Stage extends Vue {
   @Mutation(TYPE.SCALE_RADIO) private scaleRatio!: Function
   @Mutation(MODEL.CANCEL) private cancelSelect!: Function
   @Mutation(TYPE.ADD_ELE) private addElement!: Function
+  @Mutation(TYPE.OFFSET) private setOffset!: (offset: Coord) => void
   @Action private pressMultiply!: Function
 
   render (): VNode {
@@ -322,26 +324,36 @@ export default class Stage extends Vue {
   onDragMove (e: MouseEvent) {
     switch (this.model) {
       case MODEL.MOVE:
-        if (this.startPoint) {
-          this.selectedElements.forEach(ele => ele.onMove(e, this.startPoint))
-        }
         break
       case MODEL.SCALE:
         this.selectedElements.forEach(ele => ele.onScale(e))
-        break
+        return
       case MODEL.ROTATE:
         this.selectedElements.forEach(ele => ele.onRotate(e))
         break
       default:
     }
+    const offset = this.startPoint
+    if (offset) {
+      const { stage, ratio, setOffset } = this
+
+      setOffset({
+        x: (e.pageX - stage.x - offset.x) / ratio,
+        y: (e.pageY - stage.y - offset.y) / ratio
+      })
+    }
   }
 
   onDragUp (e: MouseEvent) {
     switch (this.model) {
+      case MODEL.SCALE:
+        this.changeModel(MODEL.NONE)
+        return
       default:
         const { offset, scale, angle } = this.$store.state.editor
         this.selectedElements.forEach(ele => ele.onCommit(offset, scale, angle))
     }
+    this.startPoint = void 0
     // this.changeModel(MODEL.NONE)
   }
 
