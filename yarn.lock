@@ -99,6 +99,13 @@
   resolved "http://registry.npm.taobao.org/@babel/parser/download/@babel/parser-7.1.3.tgz#2c92469bac2b7fbff810b67fca07bd138b48af77"
   integrity sha1-LJJGm6wrf7/4ELZ/yge9E4tIr3c=
 
+"@babel/runtime@^7.1.2":
+  version "7.1.2"
+  resolved "http://registry.npm.taobao.org/@babel/runtime/download/@babel/runtime-7.1.2.tgz#81c89935f4647706fc54541145e6b4ecfef4b8e3"
+  integrity sha1-gciZNfRkdwb8VFQRRea07P70uOM=
+  dependencies:
+    regenerator-runtime "^0.12.0"
+
 "@babel/template@^7.1.0", "@babel/template@^7.1.2":
   version "7.1.2"
   resolved "http://registry.npm.taobao.org/@babel/template/download/@babel/template-7.1.2.tgz#090484a574fef5a2d2d7726a674eceda5c5b5644"
@@ -4477,6 +4484,13 @@ hoist-non-react-statics@^2.3.1:
   resolved "http://registry.npm.taobao.org/hoist-non-react-statics/download/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
   integrity sha1-xZA89AnA39kI84jmGdhrnBF0y0c=
 
+hoist-non-react-statics@^3.0.0:
+  version "3.1.0"
+  resolved "http://registry.npm.taobao.org/hoist-non-react-statics/download/hoist-non-react-statics-3.1.0.tgz#42414ccdfff019cd2168168be998c7b3bd5245c0"
+  integrity sha1-QkFMzf/wGc0haBaL6ZjHs71SRcA=
+  dependencies:
+    react-is "^16.3.2"
+
 home-or-tmp@^2.0.0:
   version "2.0.0"
   resolved "http://registry.npm.taobao.org/home-or-tmp/download/home-or-tmp-2.0.0.tgz#e36c3f2d2cae7d746a857e38d18d5f32a7882db8"
@@ -4865,7 +4879,7 @@ intersperse@^1.0.0:
   resolved "http://registry.npm.taobao.org/intersperse/download/intersperse-1.0.0.tgz#f2561fb1cfef9f5277cc3347a22886b4351a5181"
   integrity sha1-8lYfsc/vn1J3zDNHoiiGtDUaUYE=
 
-invariant@^2.2.2:
+invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"
   resolved "http://registry.npm.taobao.org/invariant/download/invariant-2.2.4.tgz#610f3c92c9359ce1db616e538008d23ff35158e6"
   integrity sha1-YQ88ksk1nOHbYW5TgAjSP/NRWOY=
@@ -6421,7 +6435,7 @@ lodash.without@~4.4.0:
   resolved "http://registry.npm.taobao.org/lodash.without/download/lodash.without-4.4.0.tgz#3cd4574a00b67bae373a94b748772640507b7aac"
   integrity sha1-PNRXSgC2e643OpS3SHcmQFB7eqw=
 
-"lodash@>=3.5 <5", lodash@^4.13.1, lodash@^4.16.5, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.2, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0:
+"lodash@>=3.5 <5", lodash@^4.13.1, lodash@^4.16.5, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.2, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.3.0:
   version "4.17.11"
   resolved "http://registry.npm.taobao.org/lodash/download/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha1-s56mIp72B+zYniyN8SU2iRysm40=
@@ -6463,7 +6477,7 @@ longest@^1.0.1:
   resolved "http://registry.npm.taobao.org/longest/download/longest-1.0.1.tgz#30a0b2da38f73770e8294a0d22e6625ed77d0097"
   integrity sha1-MKCy2jj3N3DoKUoNIuZiXtd9AJc=
 
-loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.3.1:
+loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.3.1, loose-envify@^1.4.0:
   version "1.4.0"
   resolved "http://registry.npm.taobao.org/loose-envify/download/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
   integrity sha1-ce5R+nvkyuwaY4OffmgtgTLTDK8=
@@ -8503,7 +8517,7 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-prop-types@15.x, prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.7, prop-types@^15.5.8, prop-types@^15.5.9, prop-types@^15.6.0, prop-types@^15.6.2:
+prop-types@15.x, prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.7, prop-types@^15.5.8, prop-types@^15.5.9, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.6.2"
   resolved "http://registry.npm.taobao.org/prop-types/download/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
   integrity sha1-BdXKd7RFPphdYPx/+MhZCUpJcQI=
@@ -9176,6 +9190,11 @@ react-error-overlay@^4.0.1:
   resolved "http://registry.npm.taobao.org/react-error-overlay/download/react-error-overlay-4.0.1.tgz#417addb0814a90f3a7082eacba7cee588d00da89"
   integrity sha1-QXrdsIFKkPOnCC6sunzuWI0A2ok=
 
+react-is@^16.3.2, react-is@^16.6.0:
+  version "16.6.0"
+  resolved "http://registry.npm.taobao.org/react-is/download/react-is-16.6.0.tgz#456645144581a6e99f6816ae2bd24ee94bdd0c01"
+  integrity sha1-RWZFFEWBpumfaBauK9JO6UvdDAE=
+
 react-lazy-load@^3.0.13:
   version "3.0.13"
   resolved "http://registry.npm.taobao.org/react-lazy-load/download/react-lazy-load-3.0.13.tgz#3b0a92d336d43d3f0d73cbe6f35b17050b08b824"
@@ -9186,10 +9205,23 @@ react-lazy-load@^3.0.13:
     lodash.throttle "^4.0.0"
     prop-types "^15.5.8"
 
-react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
+react-lifecycles-compat@^3.0.0, react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "http://registry.npm.taobao.org/react-lifecycles-compat/download/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha1-TxonOv38jzSIqMUWv9p4+HI1I2I=
+
+react-redux@^5.1.0:
+  version "5.1.0"
+  resolved "http://registry.npm.taobao.org/react-redux/download/react-redux-5.1.0.tgz#948b1e2686473d1999092bcfb32d0dc43d33f667"
+  integrity sha1-lIseJoZHPRmZCSvPsy0NxD0z9mc=
+  dependencies:
+    "@babel/runtime" "^7.1.2"
+    hoist-non-react-statics "^3.0.0"
+    invariant "^2.2.4"
+    loose-envify "^1.1.0"
+    prop-types "^15.6.1"
+    react-is "^16.6.0"
+    react-lifecycles-compat "^3.0.0"
 
 react-scripts-ts@3.1.0:
   version "3.1.0"
@@ -9469,6 +9501,31 @@ reduce-function-call@^1.0.1:
   dependencies:
     balanced-match "^0.4.2"
 
+redux-devtools-instrument@^1.0.1:
+  version "1.9.0"
+  resolved "http://registry.npm.taobao.org/redux-devtools-instrument/download/redux-devtools-instrument-1.9.0.tgz#2faed9ac3292c783284b21843edfaa0567764a0c"
+  integrity sha1-L67ZrDKSx4MoSyGEPt+qBWd2Sgw=
+  dependencies:
+    lodash "^4.2.0"
+    symbol-observable "^1.0.2"
+
+redux-devtools@^3.4.1:
+  version "3.4.1"
+  resolved "http://registry.npm.taobao.org/redux-devtools/download/redux-devtools-3.4.1.tgz#09d342ce0ab6087be679e953a1d7c530efa1138e"
+  integrity sha1-CdNCzgq2CHvmeelTodfFMO+hE44=
+  dependencies:
+    lodash "^4.2.0"
+    prop-types "^15.5.7"
+    redux-devtools-instrument "^1.0.1"
+
+redux@^4.0.1:
+  version "4.0.1"
+  resolved "http://registry.npm.taobao.org/redux/download/redux-4.0.1.tgz#436cae6cc40fbe4727689d7c8fae44808f1bfef5"
+  integrity sha1-Q2yubMQPvkcnaJ18j65EgI8b/vU=
+  dependencies:
+    loose-envify "^1.4.0"
+    symbol-observable "^1.2.0"
+
 regenerate@^1.2.1:
   version "1.4.0"
   resolved "http://registry.npm.taobao.org/regenerate/download/regenerate-1.4.0.tgz#4a856ec4b56e4077c557589cae85e7a4c8869a11"
@@ -9478,6 +9535,11 @@ regenerator-runtime@^0.11.0:
   version "0.11.1"
   resolved "http://registry.npm.taobao.org/regenerator-runtime/download/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
   integrity sha1-vgWtf5v30i4Fb5cmzuUBf78Z4uk=
+
+regenerator-runtime@^0.12.0:
+  version "0.12.1"
+  resolved "http://registry.npm.taobao.org/regenerator-runtime/download/regenerator-runtime-0.12.1.tgz#fa1a71544764c036f8c49b13a08b2594c9f8a0de"
+  integrity sha1-+hpxVEdkwDb4xJsToIsllMn4oN4=
 
 regenerator-transform@^0.10.0:
   version "0.10.1"
@@ -10776,7 +10838,7 @@ sw-toolbox@^3.4.0:
     path-to-regexp "^1.0.1"
     serviceworker-cache-polyfill "^4.0.0"
 
-symbol-observable@^1.1.0:
+symbol-observable@^1.0.2, symbol-observable@^1.1.0, symbol-observable@^1.2.0:
   version "1.2.0"
   resolved "http://registry.npm.taobao.org/symbol-observable/download/symbol-observable-1.2.0.tgz#c22688aed4eab3cdc2dfeacbb561660560a00804"
   integrity sha1-wiaIrtTqs83C3+rLtWFmBWCgCAQ=
